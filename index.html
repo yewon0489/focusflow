@@ -5,114 +5,102 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow Dashboard</title>
   <style>
-    /* 기본 UI */
+    /* 기본 UI 및 초기화 */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; }
+    body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; padding: 10px; }
     body.team-mode { background-color: #0b1118; }
-    #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
-    #login-screen h1 { color: #4ade80; font-size: 32px; }
-    #login-screen p { color: #94a3b8; margin-bottom: 20px; }
-    .btn-google { background: #ffffff; color: #0f1115; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; }
     
-    #main-dashboard { display: none; width: 100%; max-width: 1200px; padding: 24px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 20px; }
-    .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
+    #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 20px; }
+    #login-screen h1 { color: #4ade80; font-size: 32px; }
+    #login-screen p { color: #94a3b8; font-size: 14px; margin-bottom: 5px; }
+    .developer-tag { font-size: 13px; color: #64748b; font-family: monospace; letter-spacing: 1px; }
+    .btn-google { background: #ffffff; color: #0f1115; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    
+    #main-dashboard { display: none; width: 100%; max-width: 1200px; padding: 16px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 10px; }
+    
+    .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
     body.team-mode .header-banner { background: linear-gradient(135deg, #111d2e 0%, #0a111b 100%); border-color: #1e3a5f; }
+    
     .user-profile { display: flex; align-items: center; gap: 12px; }
-    .user-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #4ade80; }
+    .user-profile img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4ade80; }
     body.team-mode .user-profile img { border-color: #38bdf8; }
-    .user-info-text h1 { font-size: 20px; color: #4ade80; }
+    .user-info-text h1 { font-size: 16px; color: #4ade80; }
     body.team-mode .user-info-text h1 { color: #38bdf8; }
-    .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; }
+    .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; margin-top: 2px; }
     
     .mode-toggle { display: flex; background: #0f1115; border-radius: 10px; padding: 4px; border: 1px solid #28323e; }
-    .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+    .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
     .mode-btn.active.personal { background: #4ade80; color: #0f1115; }
     .mode-btn.active.team { background: #38bdf8; color: #0f1115; }
-    .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 12px 20px; border-radius: 12px; text-align: right; }
-    .clock-time { font-size: 24px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 2px; }
     
-    /* 그리드 & 카드 */
+    .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 8px 14px; border-radius: 12px; text-align: right; }
+    .clock-time { font-size: 18px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 1px; }
+    
+    /* 그리드 및 카드 기본 (PC 기준 2열) */
     .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-    .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; position: relative; }
+    .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px; position: relative; }
     .card-full { grid-column: 1 / -1; }
-    .card-title { font-size: 16px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 8px; }
+    .card-title { font-size: 15px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 8px; }
     body.team-mode .card-title { color: #38bdf8; }
+    
     .input-group { display: flex; gap: 8px; }
     input[type="text"] { flex: 1; background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; }
-    button.btn-action { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; }
+    button.btn-action { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     body.team-mode button.btn-action { background: #38bdf8; }
-    .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+    
+    .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
     .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
-    .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
+    .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; word-break: break-all; }
     .list-item.completed span { text-decoration: line-through; color: #64748b; }
     .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; padding: 4px; }
-    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; flex-shrink: 0; }
     body.team-mode input[type="checkbox"] { accent-color: #38bdf8; }
-    textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 140px; outline: none; }
+    textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 120px; outline: none; width: 100%; }
     
-    /* 🎯 목표 대시보드 개선 (즉시 체크 기능) */
+    /* 목표 대시보드 (기본 4열) */
     .goals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
-    @media (max-width: 860px) { .goals-grid { grid-template-columns: 1fr 1fr; } .grid-layout { grid-template-columns: 1fr; } }
-    .goal-box { background: #0f1115; border: 1px solid #2d3748; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; transition: 0.2s; }
-    .goal-box:hover { border-color: #475569; }
-    .goal-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 8px; border-bottom: 1px dashed #2d3748; }
-    .goal-header:hover .goal-title { color: #4ade80; }
-    .goal-title { color: #f8fafc; font-weight: 600; font-size: 15px; transition: 0.2s; }
-    .goal-title::after { content: ' ⚙️'; font-size: 12px; opacity: 0.5; }
-    .goal-percent { color: #4ade80; font-size: 18px; font-weight: bold; font-family: monospace; }
-    .progress-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+    .goal-box { background: #0f1115; border: 1px solid #2d3748; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .goal-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 6px; border-bottom: 1px dashed #2d3748; }
+    .goal-title { color: #f8fafc; font-weight: 600; font-size: 14px; }
+    .goal-title::after { content: ' ⚙️'; font-size: 11px; opacity: 0.5; }
+    .goal-percent { color: #4ade80; font-size: 16px; font-weight: bold; font-family: monospace; }
+    .progress-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: #4ade80; width: 0%; transition: width 0.5s ease-out; }
     
-    /* 박스 내부 퀵 리스트 */
-    .quick-goal-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; }
-    .quick-goal-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #94a3b8; }
+    .quick-goal-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 130px; overflow-y: auto; }
+    .quick-goal-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #94a3b8; word-break: break-all; }
     .quick-goal-item.completed span { text-decoration: line-through; color: #475569; }
-    .quick-add-group { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; }
+    .quick-add-group { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; }
     .quick-add-group input { flex: 1; background: #181d24; border: 1px solid #2d3748; color: #e2e8f0; font-size: 12px; padding: 6px 8px; border-radius: 6px; outline: none; }
     .quick-add-group button { background: #2d3748; border: none; color: #e2e8f0; border-radius: 6px; padding: 0 10px; cursor: pointer; font-weight: bold; }
-    .quick-add-group button:hover { background: #4ade80; color: #0f1115; }
+    
+    .calendar-container { width: 100%; height: 350px; border-radius: 8px; overflow: hidden; border: 1px solid #2d3748; background: #0f1115; }
 
-    /* 모달 팝업 */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
-    .modal-content { background: #181d24; border: 1px solid #2d3748; border-radius: 16px; width: 90%; max-width: 600px; padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; }
-    .btn-close-modal { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
-    .btn-close-modal:hover { color: #ef4444; }
-    .modal-content h2 { color: #4ade80; font-size: 20px; }
-    .goal-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .goal-table th, .goal-table td { padding: 12px; text-align: left; border-bottom: 1px solid #2d3748; font-size: 14px; }
+    /* 모달 및 팀 UI 스타일 */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); padding: 10px; }
+    .modal-content { background: #181d24; border: 1px solid #2d3748; border-radius: 16px; width: 100%; max-width: 500px; padding: 20px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+    .btn-close-modal { position: absolute; top: 14px; right: 14px; background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; }
+    .goal-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+    .goal-table th, .goal-table td { padding: 10px; text-align: left; border-bottom: 1px solid #2d3748; font-size: 13px; }
     .goal-table th { color: #94a3b8; font-weight: 500; }
-    .goal-table td { color: #e2e8f0; }
-    .table-check { width: 40px; text-align: center; }
-    .table-action { width: 60px; text-align: center; }
-
-    .calendar-container { width: 100%; height: 400px; border-radius: 8px; overflow: hidden; border: 1px solid #2d3748; background: #0f1115; }
-
-    /* 팀 로비 및 방 화면 */
-    #team-lobby { display: none; flex-direction: column; align-items: center; justify-content: center; background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 40px 20px; text-align: center; gap: 24px; }
-    #team-lobby h2 { color: #38bdf8; }
-    .lobby-box { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; background: #0f1115; padding: 20px; border-radius: 12px; border: 1px solid #2d3748; }
-    .divider { width: 100%; height: 1px; background: #2d3748; margin: 10px 0; }
-    .room-list-container { width: 100%; max-width: 340px; background: #0f1115; border-radius: 12px; border: 1px solid #2d3748; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-    .room-list-item { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 12px 16px; border-radius: 8px; cursor: pointer; border: 1px solid #334155; }
-    .room-list-item:hover { border-color: #38bdf8; background: #2d3748; }
+    .goal-table td { color: #e2e8f0; word-break: break-all; }
     
-    #team-room-view { display: none; flex-direction: column; gap: 20px; width: 100%; }
-    .room-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 12px 20px; border-radius: 12px; border: 1px solid #334155; }
-    .room-header-left { display: flex; align-items: center; gap: 12px; }
-    .room-code-badge { background: #0f1115; padding: 4px 12px; border-radius: 6px; font-family: monospace; color: #38bdf8; font-size: 15px; font-weight: bold; }
-    .btn-edit { background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 4px; border-radius: 4px; }
-    .btn-edit:hover { color: #e2e8f0; background: #334155; }
-    .room-header-right { display: flex; align-items: center; gap: 12px; }
-    .btn-theme { background: #0f1115; border: 1px solid #475569; color: #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
-    .btn-theme:hover { border-color: #38bdf8; }
+    #team-lobby { display: none; flex-direction: column; align-items: center; justify-content: center; background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 30px 16px; text-align: center; gap: 20px; width: 100%; max-width: 480px; margin: auto; }
+    .lobby-box { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; background: #0f1115; padding: 16px; border-radius: 12px; border: 1px solid #2d3748; }
+    .room-list-container { width: 100%; max-width: 320px; background: #0f1115; border-radius: 12px; border: 1px solid #2d3748; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .room-list-item { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 10px 14px; border-radius: 8px; cursor: pointer; border: 1px solid #334155; }
     
-    .status-controls { display: flex; gap: 10px; background: #181d24; padding: 10px 20px; border-radius: 12px; border: 1px solid #28323e; align-items: center; justify-content: center; }
-    .btn-status { background: #212832; border: 1px solid #334155; color: #e2e8f0; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; }
-    .btn-status:hover { background: #2d3748; }
+    #team-room-view { display: none; flex-direction: column; gap: 16px; width: 100%; }
+    .room-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 12px 16px; border-radius: 12px; border: 1px solid #334155; flex-wrap: wrap; gap: 10px; }
+    .room-header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .room-code-badge { background: #0f1115; padding: 4px 10px; border-radius: 6px; font-family: monospace; color: #38bdf8; font-size: 13px; font-weight: bold; }
+    .btn-edit, .btn-theme { background: #0f1115; border: 1px solid #475569; color: #e2e8f0; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    
+    .status-controls { display: flex; gap: 8px; background: #181d24; padding: 10px; border-radius: 12px; border: 1px solid #28323e; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .btn-status { background: #212832; border: 1px solid #334155; color: #e2e8f0; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
     .btn-status.active { background: #38bdf8; color: #0f1115; font-weight: bold; border-color: #38bdf8; }
 
-    /* 픽셀 캔버스 & 테마 */
-    .pixel-canvas { width: 100%; height: 360px; border-radius: 14px; position: relative; overflow: hidden; transition: all 0.5s ease; }
+    .pixel-canvas { width: 100%; height: 300px; border-radius: 14px; position: relative; overflow: hidden; }
     .theme-blueprint { background: #0f1115; border: 2px solid #2d3748; background-image: radial-gradient(#2d3748 1px, transparent 1px); background-size: 20px 20px; }
     .theme-blueprint .zone { border: 2px dashed #475569; color: #64748b; background: rgba(30, 41, 59, 0.4); }
     .theme-matrix { background: #022c16; border: 2px solid #166534; background-image: linear-gradient(rgba(22, 101, 52, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(22, 101, 52, 0.3) 1px, transparent 1px); background-size: 30px 30px; }
@@ -120,16 +108,30 @@
     .theme-space { background: #1e1b4b; border: 2px solid #4c1d95; background-image: radial-gradient(#a78bfa 1px, transparent 1px); background-size: 40px 40px; }
     .theme-space .zone { border: 2px dashed #8b5cf6; color: #c4b5fd; background: rgba(76, 29, 149, 0.3); }
 
-    .zone { position: absolute; border-radius: 12px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; font-size: 14px; font-weight: bold; transition: all 0.5s; }
-    .zone-work { top: 10%; left: 8%; width: 35%; height: 45%; } .zone-meeting { top: 10%; right: 8%; width: 45%; height: 50%; } .zone-rest { bottom: 8%; left: 30%; width: 40%; height: 30%; }
+    .zone { position: absolute; border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: bold; }
+    .zone-work { top: 8%; left: 5%; width: 38%; height: 48%; } 
+    .zone-meeting { top: 8%; right: 5%; width: 48%; height: 52%; } 
+    .zone-rest { bottom: 6%; left: 25%; width: 50%; height: 32%; }
 
-    /* 아바타 애니메이션 */
     .avatar { position: absolute; z-index: 20; display: flex; flex-direction: column; align-items: center; transition: top 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translate(-50%, -50%); }
-    .avatar-bubble { background: #ffffff; color: #0f1115; font-size: 12px; font-weight: bold; padding: 6px 10px; border-radius: 12px; margin-bottom: -5px; opacity: 0; transition: opacity 0.3s; z-index: 30; }
+    .avatar-bubble { background: #ffffff; color: #0f1115; font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 10px; margin-bottom: -4px; opacity: 0; transition: opacity 0.3s; z-index: 30; white-space: nowrap; }
     .avatar.active .avatar-bubble { opacity: 1; }
-    .avatar-body { filter: drop-shadow(0 6px 8px rgba(0,0,0,0.6)); display: flex; justify-content: center; align-items: center; }
-    .avatar-name { background: rgba(15, 17, 21, 0.9); color: #e2e8f0; font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid #475569; margin-top: 2px;}
+    .avatar-body { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); display: flex; justify-content: center; align-items: center; }
+    .avatar-name { background: rgba(15, 17, 21, 0.9); color: #e2e8f0; font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid #475569; margin-top: 2px; }
     .avatar.active-user .avatar-name { border-color: #38bdf8; color: #38bdf8; font-weight: bold; }
+
+    /* 📱 모바일 화면 최적화 (화면 폭 860px 이하 스마트폰 환경) */
+    @media (max-width: 860px) {
+      body { padding: 4px; }
+      #main-dashboard { padding: 8px; gap: 12px; }
+      .grid-layout { grid-template-columns: 1fr; gap: 14px; }
+      .goals-grid { grid-template-columns: 1fr; }
+      .header-banner { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; }
+      .user-profile { justify-content: center; }
+      .clock-widget { text-align: center; }
+      .pixel-canvas { height: 260px; }
+      .zone { font-size: 11px; }
+    }
   </style>
 </head>
 <body>
@@ -137,6 +139,7 @@
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
+    <div class="developer-tag">made by ParkYeWon</div>
     <button class="btn-google" id="btn-login">Google 계정으로 로그인</button>
   </div>
 
@@ -160,48 +163,32 @@
         <h2 class="card-title">🎯 나의 목표 달성 현황</h2>
         <div class="goals-grid">
           
-          <!-- 일일 목표 -->
           <div class="goal-box">
             <div class="goal-header" data-type="daily"><span class="goal-title">일일 목표</span><span class="goal-percent" id="pct-daily">0%</span></div>
             <div class="progress-bar"><div class="progress-fill" id="bar-daily"></div></div>
             <ul class="quick-goal-list" id="list-daily"></ul>
-            <div class="quick-add-group">
-              <input type="text" id="input-daily" placeholder="목표 퀵 추가..." />
-              <button id="btn-quick-daily">+</button>
-            </div>
+            <div class="quick-add-group"><input type="text" id="input-daily" placeholder="목표 추가..." /><button id="btn-quick-daily">+</button></div>
           </div>
           
-          <!-- 주간 목표 -->
           <div class="goal-box">
             <div class="goal-header" data-type="weekly"><span class="goal-title">주간 목표</span><span class="goal-percent" id="pct-weekly">0%</span></div>
             <div class="progress-bar"><div class="progress-fill" id="bar-weekly"></div></div>
             <ul class="quick-goal-list" id="list-weekly"></ul>
-            <div class="quick-add-group">
-              <input type="text" id="input-weekly" placeholder="목표 퀵 추가..." />
-              <button id="btn-quick-weekly">+</button>
-            </div>
+            <div class="quick-add-group"><input type="text" id="input-weekly" placeholder="목표 추가..." /><button id="btn-quick-weekly">+</button></div>
           </div>
 
-          <!-- 월간 목표 -->
           <div class="goal-box">
             <div class="goal-header" data-type="monthly"><span class="goal-title">월간 목표</span><span class="goal-percent" id="pct-monthly">0%</span></div>
             <div class="progress-bar"><div class="progress-fill" id="bar-monthly"></div></div>
             <ul class="quick-goal-list" id="list-monthly"></ul>
-            <div class="quick-add-group">
-              <input type="text" id="input-monthly" placeholder="목표 퀵 추가..." />
-              <button id="btn-quick-monthly">+</button>
-            </div>
+            <div class="quick-add-group"><input type="text" id="input-monthly" placeholder="목표 추가..." /><button id="btn-quick-monthly">+</button></div>
           </div>
 
-          <!-- 올해 목표 -->
           <div class="goal-box">
             <div class="goal-header" data-type="yearly"><span class="goal-title">올해 목표</span><span class="goal-percent" id="pct-yearly">0%</span></div>
             <div class="progress-bar"><div class="progress-fill" id="bar-yearly"></div></div>
             <ul class="quick-goal-list" id="list-yearly"></ul>
-            <div class="quick-add-group">
-              <input type="text" id="input-yearly" placeholder="목표 퀵 추가..." />
-              <button id="btn-quick-yearly">+</button>
-            </div>
+            <div class="quick-add-group"><input type="text" id="input-yearly" placeholder="목표 추가..." /><button id="btn-quick-yearly">+</button></div>
           </div>
 
         </div>
@@ -219,11 +206,11 @@
         <h2 class="card-title">✅ 오늘 할 일 & 메모</h2>
         <div class="input-group"><input type="text" id="personal-task-input" placeholder="새 할 일 추가"/><button class="btn-action" id="btn-add-personal-task">추가</button></div>
         <ul class="list" id="personal-task-list"></ul>
-        <textarea id="personal-memo-input" placeholder="간단한 메모장입니다." style="margin-top: 10px;"></textarea>
+        <textarea id="personal-memo-input" placeholder="간단한 메모장입니다." style="margin-top: 5px;"></textarea>
       </section>
     </div>
 
-    <!-- 목표 삭제 관리를 위한 모달 -->
+    <!-- 모달 -->
     <div class="modal-overlay" id="goal-modal">
       <div class="modal-content">
         <button class="btn-close-modal" id="btn-close-modal">&times;</button>
@@ -235,46 +222,47 @@
       </div>
     </div>
 
-    <!-- 팀 화면 복구 완.료. -->
+    <!-- 팀 화면 -->
     <div id="team-lobby">
       <h2>🏢 팀 워크스페이스 로비</h2>
       <div class="lobby-box">
         <input type="text" id="invite-code-input" placeholder="초대 코드 입력" maxlength="6" style="text-transform: uppercase;"/>
-        <button class="btn-action" id="btn-join-room" style="padding: 12px; margin-bottom: 10px;">입장하기</button>
+        <button class="btn-action" id="btn-join-room" style="padding: 12px; margin-bottom: 8px;">입장하기</button>
         <button class="btn-action" id="btn-create-room" style="padding: 12px; background: transparent; border: 1px solid #38bdf8; color: #38bdf8;">+ 방 생성하기</button>
       </div>
       <div class="room-list-container" id="my-room-list" style="display: none;">
-        <h3>내 워크스페이스 목록</h3><div id="joined-rooms-wrapper"></div>
+        <h3>내 워크스페이스 목록</h3><div id="joined-rooms-wrapper" style="display: flex; flex-direction: column; gap: 6px;"></div>
       </div>
     </div>
 
     <div id="team-room-view">
       <div class="room-header">
         <div class="room-header-left">
-          <span style="color: #94a3b8; font-size: 14px;">현재 워크스페이스:</span>
+          <span style="color: #94a3b8; font-size: 13px;">워크스페이스:</span>
           <span class="room-code-badge" id="current-room-code-display"></span>
           <button class="btn-edit" id="btn-edit-room" title="방 이름 변경">✏️</button>
         </div>
         <div class="room-header-right">
-          <button class="btn-theme" id="btn-change-theme">🎨 테마 변경</button>
-          <button class="btn-logout" id="btn-leave-room">로비로 나가기</button>
+          <button class="btn-theme" id="btn-change-theme">🎨 테마</button>
+          <button class="btn-logout" id="btn-leave-room">로비</button>
         </div>
       </div>
       
       <div class="status-controls">
-        <span style="color: #94a3b8; font-size: 14px; margin-right: 10px;">나의 현재 상태 변경:</span>
-        <button class="btn-status active" data-status="work">💻 업무 집중</button>
-        <button class="btn-status" data-status="meeting">🗣️ 회의 참여</button>
-        <button class="btn-status" data-status="rest">☕ 휴식 및 충전</button>
+        <button class="btn-status active" data-status="work">💻 업무</button>
+        <button class="btn-status" data-status="meeting">🗣️ 회의</button>
+        <button class="btn-status" data-status="rest">☕ 휴식</button>
       </div>
 
       <div class="pixel-canvas theme-blueprint" id="canvas-area">
-        <div class="zone zone-work">🖥️ 개발/기획 존</div><div class="zone zone-meeting">🤝 회의실</div><div class="zone zone-rest">🛋️ 휴게실</div>
+        <div class="zone zone-work">🖥️ 개발/기획 존</div>
+        <div class="zone zone-meeting">🤝 회의실</div>
+        <div class="zone zone-rest">🛋️ 휴게실</div>
       </div>
 
       <div class="grid-layout" style="grid-template-columns: 1fr 1fr;">
-        <section class="card"><h2 class="card-title">📢 팀 공용 메모보드</h2><textarea id="team-memo-input"></textarea></section>
-        <section class="card"><h2 class="card-title">🚀 팀 프로젝트 마일스톤</h2><div class="input-group"><input type="text" id="team-task-input" placeholder="마일스톤 추가"/><button class="btn-action" id="btn-add-team-task">추가</button></div><ul class="list" id="team-task-list"></ul></section>
+        <section class="card"><h2 class="card-title">📢 공용 메모보드</h2><textarea id="team-memo-input"></textarea></section>
+        <section class="card"><h2 class="card-title">🚀 마일스톤</h2><div class="input-group"><input type="text" id="team-task-input" placeholder="할 일 추가"/><button class="btn-action" id="btn-add-team-task">추가</button></div><ul class="list" id="team-task-list"></ul></section>
       </div>
     </div>
   </div>
@@ -304,17 +292,13 @@
     let currentMode = 'personal'; 
     let activeRoomCode = null; 
     let currentRoomName = "";
-    
-    // 목표 데이터
     let allGoalsData = { daily: [], weekly: [], monthly: [], yearly: [] };
     let currentModalType = null;
     
-    // 테마 데이터
     const themes = ['theme-blueprint', 'theme-matrix', 'theme-space'];
     let currentThemeIndex = 0;
     const statusCoordinates = { work: { top: '30%', left: '25%' }, meeting: { top: '30%', left: '70%' }, rest: { top: '75%', left: '50%' } };
 
-    // 로봇 SVG 생성
     function getRobotSVG(status, uidString) {
       let hash = 0; for (let i = 0; i < uidString.length; i++) { hash = uidString.charCodeAt(i) + ((hash << 5) - hash); }
       const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#0ea5e9', '#8b5cf6', '#ec4899'];
@@ -322,7 +306,7 @@
       let actionProp = status === 'work' ? '<rect x="14" y="32" width="36" height="18" fill="#1e293b" rx="2"/> <rect x="18" y="36" width="28" height="10" fill="#38bdf8"/>' :
                        status === 'meeting' ? '<path d="M 40 8 C 40 0, 60 0, 60 8 C 60 16, 48 16, 45 20 L 45 16 C 40 16, 40 12, 40 8 Z" fill="#ffffff"/><circle cx="46" cy="8" r="1.5" fill="#000"/><circle cx="50" cy="8" r="1.5" fill="#000"/><circle cx="54" cy="8" r="1.5" fill="#000"/>' :
                        '<text x="36" y="16" font-family="monospace" font-size="18" fill="#e2e8f0" font-weight="bold">Zz</text>';
-      return `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="20" width="32" height="28" fill="${myColor}" rx="6"/><rect x="20" y="24" width="24" height="12" fill="#0f1115" rx="2"/><rect x="24" y="28" width="4" height="4" fill="#4ade80"/><rect x="36" y="28" width="4" height="4" fill="#4ade80"/><rect x="20" y="48" width="6" height="6" fill="#475569" rx="3"/><rect x="38" y="48" width="6" height="6" fill="#475569" rx="3"/>${actionProp}</svg>`;
+      return `<svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="20" width="32" height="28" fill="${myColor}" rx="6"/><rect x="20" y="24" width="24" height="12" fill="#0f1115" rx="2"/><rect x="24" y="28" width="4" height="4" fill="#4ade80"/><rect x="36" y="28" width="4" height="4" fill="#4ade80"/><rect x="20" y="48" width="6" height="6" fill="#475569" rx="3"/><rect x="38" y="48" width="6" height="6" fill="#475569" rx="3"/>${actionProp}</svg>`;
     }
 
     setInterval(() => { const now = new Date(); document.getElementById('realtime-clock').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`; }, 1000);
@@ -337,7 +321,6 @@
         document.getElementById('user-name').textContent = `${user.displayName}님`;
         document.getElementById('user-photo').src = user.photoURL;
         
-        // 동적 캘린더 세팅
         const userEmailForCal = encodeURIComponent(user.email);
         document.getElementById('my-dynamic-calendar').src = `https://calendar.google.com/calendar/embed?src=${userEmailForCal}&ctz=Asia%2FSeoul&bgcolor=%230f1115&color=%234ade80&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0&mode=MONTH`;
 
@@ -381,12 +364,10 @@
     function loadPersonalData() {
       const userRef = doc(db, "users", currentUser.uid);
       
-      // 개인 메모
       const pMemo = document.getElementById('personal-memo-input');
       onSnapshot(doc(userRef, "data", "memo"), s => { if (s.exists() && document.activeElement !== pMemo) pMemo.value = s.data().content || ''; });
       pMemo.oninput = () => { setTimeout(() => setDoc(doc(userRef, "data", "memo"), { content: pMemo.value }, { merge: true }), 800); };
 
-      // 개인 할 일
       if(unsubPTask) unsubPTask();
       unsubPTask = onSnapshot(query(collection(userRef, "tasks"), orderBy("createdAt", "asc")), s => {
         const list = document.getElementById('personal-task-list'); list.innerHTML = '';
@@ -403,7 +384,6 @@
         if(inp.value.trim()) { addDoc(collection(userRef, "tasks"), { text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; }
       };
 
-      // 🎯 목표 데이터 (퍼센트 및 회색 리스트 렌더링)
       if(unsubGoals) unsubGoals();
       unsubGoals = onSnapshot(query(collection(userRef, "goals"), orderBy("createdAt", "asc")), (snapshot) => {
         allGoalsData = { daily: [], weekly: [], monthly: [], yearly: [] };
@@ -421,7 +401,6 @@
           document.getElementById(`pct-${type}`).textContent = `${percent}%`;
           document.getElementById(`bar-${type}`).style.width = `${percent}%`;
 
-          // 하단 퀵 리스트 렌더링
           const listEl = document.getElementById(`list-${type}`);
           listEl.innerHTML = '';
           goals.forEach(g => {
@@ -438,7 +417,6 @@
       });
     }
 
-    // 퀵 리스트에 바로 목표 추가 기능
     ['daily', 'weekly', 'monthly', 'yearly'].forEach(type => {
       const addGoal = () => {
         const inp = document.getElementById(`input-${type}`);
@@ -451,7 +429,6 @@
       document.getElementById(`input-${type}`).addEventListener('keypress', (e) => { if(e.key === 'Enter') addGoal(); });
     });
 
-    // 톱니바퀴 헤더 클릭 시에만 삭제 관리 모달 열기
     const typeNames = { daily: '일일 목표', weekly: '주간 목표', monthly: '월간 목표', yearly: '올해 목표' };
     document.querySelectorAll('.goal-header').forEach(header => {
       header.addEventListener('click', () => {
@@ -487,9 +464,6 @@
       });
     }
 
-    // ----------------------------------------------------
-    // --- 🤝 팀 워크스페이스 로직 (완벽하게 복구됨) ---
-    // ----------------------------------------------------
     let unsubJoinedRooms, unsubRoomData, unsubRoomUsers, unsubTTask, unsubTMemo;
 
     function cleanupRoomListeners() {
@@ -521,7 +495,6 @@
       });
     }
 
-    // 방 생성
     document.getElementById('btn-create-room').addEventListener('click', async () => {
       const roomName = prompt("생성할 워크스페이스의 이름을 입력하세요.");
       if(!roomName || !roomName.trim()) return;
@@ -531,7 +504,6 @@
       showTeamRoom(newCode);
     });
 
-    // 방 입장
     document.getElementById('btn-join-room').addEventListener('click', async () => {
       const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
       if(!code) return;
@@ -546,7 +518,6 @@
       }
     });
     
-    // 방 나가기(로비로)
     document.getElementById('btn-leave-room').addEventListener('click', () => {
       if(activeRoomCode && currentUser) { deleteDoc(doc(db, "rooms", activeRoomCode, "users", currentUser.uid)); }
       activeRoomCode = null;
@@ -555,7 +526,6 @@
       cleanupRoomListeners(); loadMyJoinedRooms();
     });
 
-    // 방 이름 변경
     document.getElementById('btn-edit-room').addEventListener('click', async () => {
       const newName = prompt("변경할 방 이름을 입력하세요:", currentRoomName);
       if(newName && newName.trim() && newName !== currentRoomName) {
@@ -564,13 +534,11 @@
       }
     });
 
-    // 테마 변경
     document.getElementById('btn-change-theme').addEventListener('click', async () => {
       currentThemeIndex = (currentThemeIndex + 1) % themes.length;
       await updateDoc(doc(db, "rooms", activeRoomCode), { theme: themes[currentThemeIndex] });
     });
 
-    // 방 로드 및 동기화 메인 함수
     function showTeamRoom(code) {
       activeRoomCode = code;
       document.getElementById('team-lobby').style.display = 'none';
@@ -580,7 +548,6 @@
       document.querySelector('.btn-status[data-status="work"]').classList.add('active');
       updateMyStatus('work');
       
-      // 1. 방 정보(이름, 테마) 동기화
       unsubRoomData = onSnapshot(doc(db, "rooms", code), (docSnap) => {
         if(docSnap.exists()) {
           const data = docSnap.data();
@@ -593,7 +560,6 @@
         }
       });
 
-      // 2. 아바타 이동 동기화
       const canvasArea = document.getElementById('canvas-area');
       Array.from(canvasArea.children).forEach(child => { if(child.classList.contains('avatar')) child.remove(); });
       
@@ -607,7 +573,6 @@
         });
       });
 
-      // 3. 팀 공용 할일 및 메모 동기화
       const roomRef = doc(db, "rooms", code);
       unsubTTask = onSnapshot(query(collection(roomRef, "tasks"), orderBy("createdAt", "asc")), s => {
         const list = document.getElementById('team-task-list'); list.innerHTML = '';
@@ -644,7 +609,7 @@
 
     function createAvatar(uid, name, status, message) {
       const coord = statusCoordinates[status] || statusCoordinates['work'];
-      const offsetTop = (uid.charCodeAt(0) % 30) - 15; const offsetLeft = (uid.charCodeAt(1) % 40) - 20;
+      const offsetTop = (uid.charCodeAt(0) % 20) - 10; const offsetLeft = (uid.charCodeAt(1) % 30) - 15;
       const avatarDiv = document.createElement('div');
       avatarDiv.id = `avatar-${uid}`; avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
       avatarDiv.addEventListener('mouseenter', () => avatarDiv.classList.add('active'));
@@ -663,7 +628,7 @@
       const avatarDiv = document.getElementById(`avatar-${uid}`);
       if(!avatarDiv) return;
       const coord = statusCoordinates[status] || statusCoordinates['work'];
-      const offsetTop = (uid.charCodeAt(0) % 30) - 15; const offsetLeft = (uid.charCodeAt(1) % 40) - 20;
+      const offsetTop = (uid.charCodeAt(0) % 20) - 10; const offsetLeft = (uid.charCodeAt(1) % 30) - 15;
       avatarDiv.style.top = `calc(${coord.top} + ${offsetTop}px)`; avatarDiv.style.left = `calc(${coord.left} + ${offsetLeft}px)`;
       avatarDiv.querySelector('.avatar-bubble').textContent = message;
       avatarDiv.querySelector('.avatar-body').innerHTML = getRobotSVG(status, uid);
