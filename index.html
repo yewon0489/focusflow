@@ -5,51 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow Dashboard</title>
   <style>
+    /* 기존과 동일한 예쁜 UI 디자인 */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; }
-    
     body.team-mode { background-color: #0d151c; }
-
     #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
     #login-screen h1 { color: #4ade80; font-size: 32px; }
     #login-screen p { color: #94a3b8; margin-bottom: 20px; }
     .btn-google { background: #ffffff; color: #0f1115; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; }
     .btn-google:hover { background: #f1f5f9; }
-
     #main-dashboard { display: none; width: 100%; max-width: 1080px; padding: 24px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 20px; }
-    
     .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
     body.team-mode .header-banner { background: linear-gradient(135deg, #111d2e 0%, #0a111b 100%); border-color: #1e3a5f; }
-
     .user-profile { display: flex; align-items: center; gap: 12px; }
     .user-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #4ade80; }
     body.team-mode .user-profile img { border-color: #38bdf8; }
-    
     .user-info-text h1 { font-size: 20px; color: #4ade80; }
     body.team-mode .user-info-text h1 { color: #38bdf8; }
-    
     .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; }
-    
     .mode-toggle { display: flex; background: #0f1115; border-radius: 10px; padding: 4px; border: 1px solid #28323e; }
     .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
     .mode-btn.active.personal { background: #4ade80; color: #0f1115; }
     .mode-btn.active.team { background: #38bdf8; color: #0f1115; }
-
     .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 12px 20px; border-radius: 12px; text-align: right; }
     .clock-time { font-size: 24px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 2px; }
-    
     .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; }
     @media (max-width: 860px) { .grid-layout { grid-template-columns: 1fr; } }
     .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; position: relative; }
-    
     .card-title { font-size: 16px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 8px; }
     body.team-mode .card-title { color: #38bdf8; }
-
     .input-group { display: flex; gap: 8px; }
     input[type="text"] { flex: 1; background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; }
     button.btn-add { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; }
     body.team-mode button.btn-add { background: #38bdf8; }
-    
     .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
     .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
     .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
@@ -57,10 +45,8 @@
     .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; }
     .habit-item { display: flex; justify-content: space-between; align-items: center; background: #212832; padding: 12px; border-radius: 8px; font-size: 14px; }
     .habit-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; }
-    
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; }
     body.team-mode input[type="checkbox"] { accent-color: #38bdf8; }
-
     textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 140px; outline: none; }
     .sync-status { position: absolute; top: 20px; right: 20px; font-size: 12px; color: #94a3b8; }
   </style>
@@ -128,8 +114,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    // 수정된 부분: signInWithPopup 대신 signInWithRedirect를 사용합니다.
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } 
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -163,17 +148,20 @@
         `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     }, 1000);
 
-    // 로그인 버튼 클릭 시 팝업 대신 전체 화면 넘김(Redirect)으로 실행
+    // ✅ 강력한 디버깅용 알림 추가
     document.getElementById('btn-login').addEventListener('click', () => {
-      signInWithRedirect(auth, provider);
+      alert("로그인 프로세스를 시작합니다.\n(만약 팝업 차단 경고가 뜨면 '항상 허용'으로 바꿔주세요!)");
+      
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          alert("로그인 성공! " + result.user.displayName + "님 환영합니다.");
+        })
+        .catch(error => {
+          alert("로그인이 차단되었습니다!\n에러 코드: " + error.code + "\n상세 내용: " + error.message);
+        });
     });
     
     document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-
-    // 리다이렉트 후 에러 캐치용 (에러가 있으면 콘솔이나 알림으로 보여줌)
-    getRedirectResult(auth).catch((error) => {
-      alert("로그인 중 문제가 발생했습니다: " + error.message);
-    });
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
