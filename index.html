@@ -5,15 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow Dashboard</title>
   <style>
-    /* 기존과 동일한 예쁜 UI 디자인 */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; }
-    body.team-mode { background-color: #0d151c; }
+    body.team-mode { background-color: #0b1118; }
+    
     #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
     #login-screen h1 { color: #4ade80; font-size: 32px; }
     #login-screen p { color: #94a3b8; margin-bottom: 20px; }
     .btn-google { background: #ffffff; color: #0f1115; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; }
     .btn-google:hover { background: #f1f5f9; }
+    
     #main-dashboard { display: none; width: 100%; max-width: 1080px; padding: 24px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 20px; }
     .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
     body.team-mode .header-banner { background: linear-gradient(135deg, #111d2e 0%, #0a111b 100%); border-color: #1e3a5f; }
@@ -23,36 +24,58 @@
     .user-info-text h1 { font-size: 20px; color: #4ade80; }
     body.team-mode .user-info-text h1 { color: #38bdf8; }
     .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; }
+    
     .mode-toggle { display: flex; background: #0f1115; border-radius: 10px; padding: 4px; border: 1px solid #28323e; }
     .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
     .mode-btn.active.personal { background: #4ade80; color: #0f1115; }
     .mode-btn.active.team { background: #38bdf8; color: #0f1115; }
+    
     .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 12px 20px; border-radius: 12px; text-align: right; }
     .clock-time { font-size: 24px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 2px; }
-    .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; }
+    
+    .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; width: 100%; }
     @media (max-width: 860px) { .grid-layout { grid-template-columns: 1fr; } }
+    
     .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; position: relative; }
     .card-title { font-size: 16px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 8px; }
     body.team-mode .card-title { color: #38bdf8; }
+    
     .input-group { display: flex; gap: 8px; }
     input[type="text"] { flex: 1; background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; }
-    button.btn-add { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; }
-    body.team-mode button.btn-add { background: #38bdf8; }
+    button.btn-action { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; }
+    body.team-mode button.btn-action { background: #38bdf8; }
+    
     .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
-    .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+    .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; transition: background 0.2s; }
     .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
     .list-item.completed span { text-decoration: line-through; color: #64748b; }
-    .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; }
-    .habit-item { display: flex; justify-content: space-between; align-items: center; background: #212832; padding: 12px; border-radius: 8px; font-size: 14px; }
-    .habit-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; }
+    .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; padding: 4px; }
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; }
     body.team-mode input[type="checkbox"] { accent-color: #38bdf8; }
     textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 140px; outline: none; }
-    .sync-status { position: absolute; top: 20px; right: 20px; font-size: 12px; color: #94a3b8; }
+    
+    /* --- 팀 워크스페이스 전용 UI --- */
+    #team-lobby { display: none; flex-direction: column; align-items: center; justify-content: center; background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 60px 20px; text-align: center; gap: 24px; }
+    #team-lobby h2 { color: #38bdf8; }
+    #team-lobby p { color: #94a3b8; font-size: 14px; }
+    .lobby-box { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; background: #0f1115; padding: 20px; border-radius: 12px; border: 1px solid #2d3748; }
+    .divider { width: 100%; height: 1px; background: #2d3748; margin: 10px 0; }
+    
+    #team-room-view { display: none; flex-direction: column; gap: 20px; width: 100%; }
+    .room-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 12px 20px; border-radius: 12px; border: 1px solid #334155; }
+    .room-code-badge { background: #0f1115; padding: 4px 12px; border-radius: 6px; font-family: monospace; color: #38bdf8; font-size: 16px; font-weight: bold; letter-spacing: 2px; }
+    
+    /* 픽셀 아트 캔버스 (가상 오피스 공간) */
+    .pixel-canvas { width: 100%; height: 280px; background: #0f1115; border: 2px dashed #2d3748; border-radius: 14px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .pixel-canvas::before { content: ''; position: absolute; width: 100%; height: 100%; background-image: radial-gradient(#2d3748 1px, transparent 1px); background-size: 20px 20px; opacity: 0.5; }
+    .canvas-placeholder { z-index: 10; color: #64748b; text-align: center; }
+    .dummy-character { position: absolute; z-index: 20; bottom: 40px; background: #38bdf8; color: #0f1115; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; }
+    .dummy-character::after { content: '온라인'; font-size: 10px; opacity: 0.8; }
   </style>
 </head>
 <body>
 
+  <!-- 로그인 화면 -->
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
@@ -62,6 +85,7 @@
     </button>
   </div>
 
+  <!-- 대시보드 전체 틀 -->
   <div id="main-dashboard">
     <header class="header-banner">
       <div class="user-profile">
@@ -82,39 +106,82 @@
       </div>
     </header>
 
-    <div class="grid-layout">
+    <!-- [A] 개인 모드 컨텐츠 -->
+    <div class="grid-layout" id="personal-view">
       <section class="card">
-        <h2 class="card-title" id="title-memo">📌 개인 메모장</h2>
-        <span class="sync-status" id="memo-status"></span>
-        <textarea id="memo-input" placeholder="여기에 작성된 내용은 모드에 따라 다르게 저장됩니다."></textarea>
+        <h2 class="card-title">📌 개인 메모장</h2>
+        <textarea id="personal-memo-input" placeholder="나만의 비밀 메모장입니다."></textarea>
       </section>
-
       <section class="card">
-        <h2 class="card-title" id="title-tasks">✅ 오늘 할 일</h2>
+        <h2 class="card-title">✅ 오늘 할 일</h2>
         <div class="input-group">
-          <input type="text" id="task-input" placeholder="새 할 일 입력 후 Enter" />
-          <button class="btn-add" id="btn-add-task">추가</button>
+          <input type="text" id="personal-task-input" placeholder="새 할 일 입력 후 Enter" />
+          <button class="btn-action" id="btn-add-personal-task">추가</button>
         </div>
-        <ul class="list" id="task-list"></ul>
+        <ul class="list" id="personal-task-list"></ul>
       </section>
-
       <section class="card">
-        <h2 class="card-title" id="title-habits">🌱 일일 루틴</h2>
-        <div class="list" id="habit-list">
-          <div class="habit-item"><label><input type="checkbox" id="habit-0" /><span id="label-habit-0">데일리 리서치</span></label></div>
-          <div class="habit-item"><label><input type="checkbox" id="habit-1" /><span id="label-habit-1">운동 및 스트레칭</span></label></div>
-          <div class="habit-item"><label><input type="checkbox" id="habit-2" /><span id="label-habit-2">물 2L 마시기</span></label></div>
-          <div class="habit-item"><label><input type="checkbox" id="habit-3" /><span id="label-habit-3">하루 회고 작성</span></label></div>
+        <h2 class="card-title">🌱 나의 일일 루틴</h2>
+        <div class="input-group">
+          <input type="text" id="personal-routine-input" placeholder="새로운 루틴 추가" />
+          <button class="btn-action" id="btn-add-personal-routine">추가</button>
         </div>
+        <ul class="list" id="personal-routine-list"></ul>
       </section>
+    </div>
+
+    <!-- [B-1] 팀 모드: 로비 화면 (코드 입력) -->
+    <div id="team-lobby">
+      <h2>🏢 팀 워크스페이스 로비</h2>
+      <p>팀원이 알려준 초대 코드를 입력하거나 새 방을 만드세요.</p>
+      
+      <div class="lobby-box">
+        <input type="text" id="invite-code-input" placeholder="초대 코드 입력 (예: A1B2C3)" style="text-transform: uppercase;" maxlength="6"/>
+        <button class="btn-action" id="btn-join-room" style="padding: 12px;">입장하기</button>
+        <div class="divider"></div>
+        <button class="btn-action" id="btn-create-room" style="padding: 12px; background: transparent; border: 1px solid #38bdf8; color: #38bdf8;">+ 새로운 방 생성하기</button>
+      </div>
+    </div>
+
+    <!-- [B-2] 팀 모드: 방 내부 화면 -->
+    <div id="team-room-view">
+      <div class="room-header">
+        <span style="color: #94a3b8; font-size: 14px;">현재 위치: 
+          <span class="room-code-badge" id="current-room-code-display">------</span>
+        </span>
+        <button class="btn-logout" id="btn-leave-room">방 나가기</button>
+      </div>
+      
+      <!-- 픽셀 아트 가상 오피스 공간 -->
+      <div class="pixel-canvas">
+        <div class="canvas-placeholder">
+          <p>🎨 이곳에 AI로 생성한 방 배경과 캐릭터가 배치됩니다.</p>
+        </div>
+        <div class="dummy-character" id="my-character">나의 캐릭터</div>
+      </div>
+
+      <div class="grid-layout" style="grid-template-columns: 1fr 1fr;">
+        <section class="card">
+          <h2 class="card-title">📢 팀 공용 메모보드</h2>
+          <textarea id="team-memo-input" placeholder="방에 있는 팀원들과 실시간으로 공유됩니다."></textarea>
+        </section>
+        <section class="card">
+          <h2 class="card-title">🚀 팀 프로젝트 마일스톤</h2>
+          <div class="input-group">
+            <input type="text" id="team-task-input" placeholder="팀 할 일 추가" />
+            <button class="btn-action" id="btn-add-team-task">추가</button>
+          </div>
+          <ul class="list" id="team-task-list"></ul>
+        </section>
+      </div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy } 
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy, getDoc } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
+    import { getAuth, signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -123,8 +190,7 @@
       projectId: "focusflow-db-9b872",
       storageBucket: "focusflow-db-9b872.firebasestorage.app",
       messagingSenderId: "125507292387",
-      appId: "1:125507292387:web:a4ad3ed445bda83ff289d6",
-      measurementId: "G-1BVJ54ESHM"
+      appId: "1:125507292387:web:a4ad3ed445bda83ff289d6"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -134,13 +200,13 @@
 
     let currentUserUid = null;
     let currentMode = 'personal'; 
+    let activeRoomCode = null; 
     
+    // UI Elements
     const body = document.body;
-    const btnModePersonal = document.getElementById('btn-mode-personal');
-    const btnModeTeam = document.getElementById('btn-mode-team');
-    const titleMemo = document.getElementById('title-memo');
-    const titleTasks = document.getElementById('title-tasks');
-    const titleHabits = document.getElementById('title-habits');
+    const personalView = document.getElementById('personal-view');
+    const teamLobby = document.getElementById('team-lobby');
+    const teamRoomView = document.getElementById('team-room-view');
     
     setInterval(() => {
       const now = new Date();
@@ -148,20 +214,9 @@
         `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     }, 1000);
 
-    // ✅ 강력한 디버깅용 알림 추가
-    document.getElementById('btn-login').addEventListener('click', () => {
-      alert("로그인 프로세스를 시작합니다.\n(만약 팝업 차단 경고가 뜨면 '항상 허용'으로 바꿔주세요!)");
-      
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          alert("로그인 성공! " + result.user.displayName + "님 환영합니다.");
-        })
-        .catch(error => {
-          alert("로그인이 차단되었습니다!\n에러 코드: " + error.code + "\n상세 내용: " + error.message);
-        });
-    });
-    
+    document.getElementById('btn-login').addEventListener('click', () => signInWithRedirect(auth, provider));
     document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+    getRedirectResult(auth).catch(e => console.error(e));
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -170,149 +225,170 @@
         document.getElementById('main-dashboard').style.display = 'flex';
         document.getElementById('user-name').textContent = `${user.displayName}님`;
         document.getElementById('user-photo').src = user.photoURL;
-        
+        document.getElementById('my-character').textContent = user.displayName; 
         switchMode('personal'); 
       } else {
-        currentUserUid = null;
+        currentUserUid = null; activeRoomCode = null;
         document.getElementById('login-screen').style.display = 'flex';
         document.getElementById('main-dashboard').style.display = 'none';
-        cleanupListeners();
+        cleanupPersonalListeners(); cleanupTeamListeners();
       }
     });
 
-    btnModePersonal.addEventListener('click', () => switchMode('personal'));
-    btnModeTeam.addEventListener('click', () => switchMode('team'));
+    // 모드 전환
+    document.getElementById('btn-mode-personal').addEventListener('click', () => switchMode('personal'));
+    document.getElementById('btn-mode-team').addEventListener('click', () => switchMode('team'));
 
     function switchMode(mode) {
       currentMode = mode;
       if (mode === 'personal') {
         body.classList.remove('team-mode');
-        btnModePersonal.classList.add('active');
-        btnModeTeam.classList.remove('active');
-        titleMemo.textContent = '📌 개인 메모장';
-        titleTasks.textContent = '✅ 나의 할 일';
-        titleHabits.textContent = '🌱 나의 일일 루틴';
+        document.getElementById('btn-mode-personal').classList.add('active');
+        document.getElementById('btn-mode-team').classList.remove('active');
+        
+        personalView.style.display = 'grid';
+        teamLobby.style.display = 'none';
+        teamRoomView.style.display = 'none';
+        
+        cleanupTeamListeners();
+        loadPersonalData();
       } else {
         body.classList.add('team-mode');
-        btnModePersonal.classList.remove('active');
-        btnModeTeam.classList.add('active');
-        titleMemo.textContent = '📢 팀 공지 및 회의록';
-        titleTasks.textContent = '🚀 팀 프로젝트 마일스톤';
-        titleHabits.textContent = '📊 팀 공동 체크리스트';
+        document.getElementById('btn-mode-personal').classList.remove('active');
+        document.getElementById('btn-mode-team').classList.add('active');
+        
+        personalView.style.display = 'none';
+        cleanupPersonalListeners();
+        
+        if (activeRoomCode) {
+          showTeamRoom(activeRoomCode);
+        } else {
+          teamLobby.style.display = 'flex';
+          teamRoomView.style.display = 'none';
+        }
       }
-      loadDataForCurrentMode();
     }
 
-    let unsubscribeTasks, unsubscribeMemo, unsubscribeHabits;
-    const taskInput = document.getElementById('task-input');
-    const memoInput = document.getElementById('memo-input');
-    
-    const getDbPath = (collectionName) => {
-      return currentMode === 'personal' 
-        ? collection(db, "users", currentUserUid, collectionName)
-        : collection(db, "team_workspace", "main_room", collectionName); 
-    };
-    const getDocPath = (docName) => {
-      return currentMode === 'personal'
-        ? doc(db, "users", currentUserUid, docName)
-        : doc(db, "team_workspace", "main_room", docName);
-    };
+    // --- [로비 시스템: 방 생성 및 입장] ---
+    document.getElementById('btn-create-room').addEventListener('click', async () => {
+      // 6자리 난수 코드 생성
+      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      await setDoc(doc(db, "rooms", newCode), { createdAt: Date.now(), createdBy: currentUserUid });
+      alert(`새로운 팀 워크스페이스가 생성되었습니다!\n초대 코드: ${newCode}`);
+      showTeamRoom(newCode);
+    });
 
-    function cleanupListeners() {
-      if(unsubscribeTasks) unsubscribeTasks();
-      if(unsubscribeMemo) unsubscribeMemo();
-      if(unsubscribeHabits) unsubscribeHabits();
+    document.getElementById('btn-join-room').addEventListener('click', async () => {
+      const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+      if(code.length !== 6) return alert("6자리 코드를 정확히 입력해주세요.");
+      
+      const roomSnap = await getDoc(doc(db, "rooms", code));
+      if(roomSnap.exists()) {
+        showTeamRoom(code);
+      } else {
+        alert("존재하지 않거나 잘못된 초대 코드입니다.");
+      }
+    });
+
+    document.getElementById('btn-leave-room').addEventListener('click', () => {
+      activeRoomCode = null;
+      cleanupTeamListeners();
+      teamRoomView.style.display = 'none';
+      teamLobby.style.display = 'flex';
+    });
+
+    function showTeamRoom(code) {
+      activeRoomCode = code;
+      document.getElementById('current-room-code-display').textContent = code;
+      teamLobby.style.display = 'none';
+      teamRoomView.style.display = 'flex';
+      loadTeamData(code);
     }
 
-    let isEventListenersAttached = false;
+    // --- [데이터 처리 로직] ---
+    let unsubPTask, unsubPRoutine, unsubPMemo;
+    let unsubTTask, unsubTMemo;
     let memoTimeout;
 
-    function attachGlobalListeners() {
-      if (isEventListenersAttached) return;
-      isEventListenersAttached = true;
-
-      document.getElementById('btn-add-task').onclick = () => {
-        if (!taskInput.value.trim()) return;
-        addDoc(getDbPath("tasks"), { text: taskInput.value.trim(), completed: false, createdAt: Date.now() });
-        taskInput.value = '';
-      };
-
-      const memoStatus = document.getElementById('memo-status');
-      memoInput.addEventListener('input', () => {
-        memoStatus.textContent = '저장 중...';
-        clearTimeout(memoTimeout);
-        memoTimeout = setTimeout(() => {
-          setDoc(getDocPath("memo"), { content: memoInput.value }, { merge: true });
-          memoStatus.textContent = '저장됨';
-          setTimeout(() => memoStatus.textContent = '', 2000);
-        }, 800);
+    function renderList(snapshot, elementId, pathRef) {
+      const listEl = document.getElementById(elementId);
+      listEl.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const li = document.createElement('li');
+        li.className = `list-item ${data.completed ? 'completed' : ''}`;
+        
+        const content = document.createElement('div');
+        content.className = 'list-item-content';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = data.completed;
+        checkbox.onclick = (e) => {
+          e.stopPropagation();
+          updateDoc(doc(pathRef, docSnap.id), { completed: !data.completed });
+        };
+        
+        const text = document.createElement('span');
+        text.textContent = data.text;
+        
+        content.appendChild(checkbox); content.appendChild(text);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete'; deleteBtn.textContent = '삭제';
+        deleteBtn.onclick = () => deleteDoc(doc(pathRef, docSnap.id));
+        
+        li.appendChild(content); li.appendChild(deleteBtn);
+        listEl.appendChild(li);
       });
-      
-      for (let i = 0; i < 4; i++) {
-        const cb = document.getElementById(`habit-${i}`);
-        cb.addEventListener('change', () => setDoc(getDocPath("habits"), { [`habit_${i}`]: cb.checked }, { merge: true }));
-      }
     }
 
-    function loadDataForCurrentMode() {
-      cleanupListeners();
-      attachGlobalListeners();
-
-      const taskListEl = document.getElementById('task-list');
-      taskInput.value = ''; 
+    // 1. 개인 데이터 로드
+    function cleanupPersonalListeners() {
+      if(unsubPTask) unsubPTask(); if(unsubPRoutine) unsubPRoutine(); if(unsubPMemo) unsubPMemo();
+    }
+    function loadPersonalData() {
+      const userRef = doc(db, "users", currentUserUid);
       
-      unsubscribeTasks = onSnapshot(query(getDbPath("tasks"), orderBy("createdAt", "asc")), (snapshot) => {
-        taskListEl.innerHTML = '';
-        snapshot.forEach((docSnap) => {
-          const task = docSnap.data();
-          const li = document.createElement('li');
-          li.className = `list-item ${task.completed ? 'completed' : ''}`;
-          
-          const content = document.createElement('div');
-          content.className = 'list-item-content';
-          
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = task.completed;
-          checkbox.onclick = (e) => {
-            e.stopPropagation();
-            updateDoc(doc(getDbPath("tasks").firestore, getDbPath("tasks").path, docSnap.id), { completed: !task.completed });
-          };
-          
-          const text = document.createElement('span');
-          text.textContent = task.text;
-          
-          content.appendChild(checkbox);
-          content.appendChild(text);
-          
-          const deleteBtn = document.createElement('button');
-          deleteBtn.className = 'btn-delete';
-          deleteBtn.textContent = '삭제';
-          deleteBtn.onclick = () => deleteDoc(doc(getDbPath("tasks").firestore, getDbPath("tasks").path, docSnap.id));
-          
-          li.appendChild(content);
-          li.appendChild(deleteBtn);
-          taskListEl.appendChild(li);
-        });
-      });
+      unsubPTask = onSnapshot(query(collection(userRef, "tasks"), orderBy("createdAt", "asc")), s => renderList(s, 'personal-task-list', collection(userRef, "tasks")));
+      document.getElementById('btn-add-personal-task').onclick = () => {
+        const input = document.getElementById('personal-task-input');
+        if (input.value.trim()) { addDoc(collection(userRef, "tasks"), { text: input.value.trim(), completed: false, createdAt: Date.now() }); input.value = ''; }
+      };
 
-      memoInput.value = '';
-      unsubscribeMemo = onSnapshot(getDocPath("memo"), (docSnap) => {
-        if (docSnap.exists() && document.activeElement !== memoInput) {
-          memoInput.value = docSnap.data().content || '';
-        }
-      });
+      unsubPRoutine = onSnapshot(query(collection(userRef, "routines"), orderBy("createdAt", "asc")), s => renderList(s, 'personal-routine-list', collection(userRef, "routines")));
+      document.getElementById('btn-add-personal-routine').onclick = () => {
+        const input = document.getElementById('personal-routine-input');
+        if (input.value.trim()) { addDoc(collection(userRef, "routines"), { text: input.value.trim(), completed: false, createdAt: Date.now() }); input.value = ''; }
+      };
 
-      for(let i=0; i<4; i++) document.getElementById(`habit-${i}`).checked = false;
-      unsubscribeHabits = onSnapshot(getDocPath("habits"), (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          for (let i = 0; i < 4; i++) {
-            const cb = document.getElementById(`habit-${i}`);
-            if (cb) cb.checked = data[`habit_${i}`] || false;
-          }
-        }
-      });
+      const pMemo = document.getElementById('personal-memo-input');
+      unsubPMemo = onSnapshot(doc(userRef, "data", "memo"), s => { if (s.exists() && document.activeElement !== pMemo) pMemo.value = s.data().content || ''; });
+      pMemo.oninput = () => {
+        clearTimeout(memoTimeout);
+        memoTimeout = setTimeout(() => setDoc(doc(userRef, "data", "memo"), { content: pMemo.value }, { merge: true }), 800);
+      };
+    }
+
+    // 2. 팀 데이터 로드
+    function cleanupTeamListeners() {
+      if(unsubTTask) unsubTTask(); if(unsubTMemo) unsubTMemo();
+    }
+    function loadTeamData(roomCode) {
+      const roomRef = doc(db, "rooms", roomCode);
+      
+      unsubTTask = onSnapshot(query(collection(roomRef, "tasks"), orderBy("createdAt", "asc")), s => renderList(s, 'team-task-list', collection(roomRef, "tasks")));
+      document.getElementById('btn-add-team-task').onclick = () => {
+        const input = document.getElementById('team-task-input');
+        if (input.value.trim()) { addDoc(collection(roomRef, "tasks"), { text: input.value.trim(), completed: false, createdAt: Date.now() }); input.value = ''; }
+      };
+
+      const tMemo = document.getElementById('team-memo-input');
+      unsubTMemo = onSnapshot(doc(roomRef, "data", "memo"), s => { if (s.exists() && document.activeElement !== tMemo) tMemo.value = s.data().content || ''; });
+      tMemo.oninput = () => {
+        clearTimeout(memoTimeout);
+        memoTimeout = setTimeout(() => setDoc(doc(roomRef, "data", "memo"), { content: tMemo.value }, { merge: true }), 800);
+      };
     }
   </script>
 </body>
