@@ -6,34 +6,53 @@
   <title>FocusFlow Dashboard</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+    body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; }
     
-    /* 로그인 화면 UI */
+    /* 모드에 따른 배경색 미세 변화 (시각적 구분) */
+    body.team-mode { background-color: #0d151c; }
+
     #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
     #login-screen h1 { color: #4ade80; font-size: 32px; }
     #login-screen p { color: #94a3b8; margin-bottom: 20px; }
     .btn-google { background: #ffffff; color: #0f1115; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; }
     .btn-google:hover { background: #f1f5f9; }
 
-    /* 메인 대시보드 UI (초기엔 숨김) */
     #main-dashboard { display: none; width: 100%; max-width: 1080px; padding: 24px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 20px; }
-    .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 24px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    
+    .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
+    /* 팀 모드일 때 헤더 배너 색상 변경 */
+    body.team-mode .header-banner { background: linear-gradient(135deg, #111d2e 0%, #0a111b 100%); border-color: #1e3a5f; }
+
     .user-profile { display: flex; align-items: center; gap: 12px; }
     .user-profile img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #4ade80; }
-    .user-info-text h1 { font-size: 20px; color: #4ade80; }
-    .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; }
-    .btn-logout:hover { background: rgba(239, 68, 68, 0.1); }
+    body.team-mode .user-profile img { border-color: #38bdf8; }
     
+    .user-info-text h1 { font-size: 20px; color: #4ade80; }
+    body.team-mode .user-info-text h1 { color: #38bdf8; }
+    
+    .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; }
+    
+    /* 모드 전환 토글 스위치 */
+    .mode-toggle { display: flex; background: #0f1115; border-radius: 10px; padding: 4px; border: 1px solid #28323e; }
+    .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+    .mode-btn.active.personal { background: #4ade80; color: #0f1115; }
+    .mode-btn.active.team { background: #38bdf8; color: #0f1115; }
+
     .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 12px 20px; border-radius: 12px; text-align: right; }
     .clock-time { font-size: 24px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 2px; }
     
     .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; }
     @media (max-width: 860px) { .grid-layout { grid-template-columns: 1fr; } }
     .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; position: relative; }
-    .card h2 { font-size: 16px; font-weight: 600; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    
+    .card-title { font-size: 16px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 8px; }
+    body.team-mode .card-title { color: #38bdf8; }
+
     .input-group { display: flex; gap: 8px; }
     input[type="text"] { flex: 1; background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; }
-    button.btn-add { background: #38bdf8; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; }
+    button.btn-add { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; }
+    body.team-mode button.btn-add { background: #38bdf8; }
+    
     .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
     .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
     .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
@@ -41,13 +60,18 @@
     .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; }
     .habit-item { display: flex; justify-content: space-between; align-items: center; background: #212832; padding: 12px; border-radius: 8px; font-size: 14px; }
     .habit-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; }
+    
+    /* 체크박스 색상 모드별 변경 */
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; }
+    body.team-mode input[type="checkbox"] { accent-color: #38bdf8; }
+
     textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 140px; outline: none; }
-    .sync-status { position: absolute; top: 20px; right: 20px; font-size: 12px; color: #4ade80; }
+    .sync-status { position: absolute; top: 20px; right: 20px; font-size: 12px; color: #94a3b8; }
   </style>
 </head>
 <body>
 
-  <!-- 1. 로그인 화면 -->
+  <!-- 로그인 화면 -->
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
@@ -57,7 +81,7 @@
     </button>
   </div>
 
-  <!-- 2. 메인 대시보드 -->
+  <!-- 메인 대시보드 -->
   <div id="main-dashboard">
     <header class="header-banner">
       <div class="user-profile">
@@ -67,22 +91,27 @@
           <button class="btn-logout" id="btn-logout">로그아웃</button>
         </div>
       </div>
+      
+      <!-- 워크스페이스 전환 토글 -->
+      <div class="mode-toggle">
+        <button class="mode-btn active personal" id="btn-mode-personal">👤 개인 공간</button>
+        <button class="mode-btn team" id="btn-mode-team">🤝 팀 공유</button>
+      </div>
+
       <div class="clock-widget">
         <div class="clock-time" id="realtime-clock">00:00:00</div>
       </div>
     </header>
 
     <div class="grid-layout">
-      <!-- Memo -->
       <section class="card">
-        <h2>📌 빠른 메모 & 리마인더</h2>
+        <h2 class="card-title" id="title-memo">📌 개인 메모장</h2>
         <span class="sync-status" id="memo-status"></span>
-        <textarea id="memo-input" placeholder="데이터가 클라우드에 실시간으로 저장됩니다..."></textarea>
+        <textarea id="memo-input" placeholder="여기에 작성된 내용은 모드에 따라 다르게 저장됩니다."></textarea>
       </section>
 
-      <!-- Tasks -->
       <section class="card">
-        <h2>✅ 오늘 할 일 (Tasks)</h2>
+        <h2 class="card-title" id="title-tasks">✅ 오늘 할 일</h2>
         <div class="input-group">
           <input type="text" id="task-input" placeholder="새 할 일 입력 후 Enter" />
           <button class="btn-add" id="btn-add-task">추가</button>
@@ -90,14 +119,13 @@
         <ul class="list" id="task-list"></ul>
       </section>
 
-      <!-- Habits -->
       <section class="card">
-        <h2>🌱 일일 루틴 & 습관</h2>
+        <h2 class="card-title" id="title-habits">🌱 일일 루틴</h2>
         <div class="list" id="habit-list">
-          <div class="habit-item"><label><input type="checkbox" id="habit-0" /><span>📚 데일리 리딩 & 리서치</span></label></div>
-          <div class="habit-item"><label><input type="checkbox" id="habit-1" /><span>🏃‍♂️ 운동 및 스트레칭</span></label></div>
-          <div class="habit-item"><label><input type="checkbox" id="habit-2" /><span>💧 물 2L 마시기</span></label></div>
-          <div class="habit-item"><label><input type="checkbox" id="habit-3" /><span>🌙 오늘 하루 회고 작성</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-0" /><span id="label-habit-0">데일리 리서치</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-1" /><span id="label-habit-1">운동 및 스트레칭</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-2" /><span id="label-habit-2">물 2L 마시기</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-3" /><span id="label-habit-3">하루 회고 작성</span></label></div>
         </div>
       </section>
     </div>
@@ -125,55 +153,138 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // UI 요소 매핑
-    const loginScreen = document.getElementById('login-screen');
-    const mainDashboard = document.getElementById('main-dashboard');
-    const userName = document.getElementById('user-name');
-    const userPhoto = document.getElementById('user-photo');
-
-    // 시계 로직
+    let currentUserUid = null;
+    let currentMode = 'personal'; // 'personal' or 'team'
+    
+    // UI 요소
+    const body = document.body;
+    const btnModePersonal = document.getElementById('btn-mode-personal');
+    const btnModeTeam = document.getElementById('btn-mode-team');
+    const titleMemo = document.getElementById('title-memo');
+    const titleTasks = document.getElementById('title-tasks');
+    const titleHabits = document.getElementById('title-habits');
+    
+    // 시계
     setInterval(() => {
       const now = new Date();
       document.getElementById('realtime-clock').textContent = 
         `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     }, 1000);
 
-    // 로그인 / 로그아웃 버튼 이벤트
-    document.getElementById('btn-login').addEventListener('click', () => {
-      signInWithPopup(auth, provider).catch(error => alert("로그인 에러: " + error.message));
-    });
+    // 로그인 관리
+    document.getElementById('btn-login').addEventListener('click', () => signInWithPopup(auth, provider));
     document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
 
-    // 접속 상태 감지기 (로그인 성공 시 대시보드 띄우기)
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // 로그인 성공: 프로필 세팅 및 대시보드 렌더링
-        loginScreen.style.display = 'none';
-        mainDashboard.style.display = 'flex';
-        userName.textContent = `${user.displayName}님의 대시보드`;
-        userPhoto.src = user.photoURL;
+        currentUserUid = user.uid;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-dashboard').style.display = 'flex';
+        document.getElementById('user-name').textContent = `${user.displayName}님`;
+        document.getElementById('user-photo').src = user.photoURL;
         
-        loadDashboardData(); // 데이터 불러오기 시작
+        switchMode('personal'); // 로그인 시 기본은 개인 모드
       } else {
-        // 로그아웃 상태: 로그인 화면 띄우기
-        loginScreen.style.display = 'flex';
-        mainDashboard.style.display = 'none';
+        currentUserUid = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-dashboard').style.display = 'none';
+        cleanupListeners();
       }
     });
 
-    // 데이터베이스 로직 (로그인 완료 후 실행)
-    let unsubscribeTasks, unsubscribeMemo, unsubscribeHabits;
+    // 모드 전환 로직
+    btnModePersonal.addEventListener('click', () => switchMode('personal'));
+    btnModeTeam.addEventListener('click', () => switchMode('team'));
 
-    function loadDashboardData() {
-      // 기존 구독 초기화
+    function switchMode(mode) {
+      currentMode = mode;
+      
+      // UI 변경 (색상 및 텍스트)
+      if (mode === 'personal') {
+        body.classList.remove('team-mode');
+        btnModePersonal.classList.add('active');
+        btnModeTeam.classList.remove('active');
+        titleMemo.textContent = '📌 개인 메모장';
+        titleTasks.textContent = '✅ 나의 할 일';
+        titleHabits.textContent = '🌱 나의 일일 루틴';
+      } else {
+        body.classList.add('team-mode');
+        btnModePersonal.classList.remove('active');
+        btnModeTeam.classList.add('active');
+        titleMemo.textContent = '📢 팀 공지 및 회의록';
+        titleTasks.textContent = '🚀 팀 프로젝트 마일스톤';
+        titleHabits.textContent = '📊 팀 공동 체크리스트';
+      }
+
+      loadDataForCurrentMode();
+    }
+
+    // 데이터베이스 로직
+    let unsubscribeTasks, unsubscribeMemo, unsubscribeHabits;
+    const taskInput = document.getElementById('task-input');
+    const memoInput = document.getElementById('memo-input');
+    
+    // DB 경로 생성 함수 (모드에 따라 경로 분리)
+    const getDbPath = (collectionName) => {
+      return currentMode === 'personal' 
+        ? collection(db, "users", currentUserUid, collectionName)
+        : collection(db, "team_workspace", "main_room", collectionName); // 팀 공용 경로
+    };
+    const getDocPath = (docName) => {
+      return currentMode === 'personal'
+        ? doc(db, "users", currentUserUid, docName)
+        : doc(db, "team_workspace", "main_room", docName);
+    };
+
+    function cleanupListeners() {
       if(unsubscribeTasks) unsubscribeTasks();
       if(unsubscribeMemo) unsubscribeMemo();
       if(unsubscribeHabits) unsubscribeHabits();
+    }
 
-      // 1. 할 일 동기화
+    // 전역 이벤트 리스너(할 일 추가, 메모 입력)는 한 번만 등록되도록 관리
+    let isEventListenersAttached = false;
+    let memoTimeout;
+
+    function attachGlobalListeners() {
+      if (isEventListenersAttached) return;
+      isEventListenersAttached = true;
+
+      // 할 일 추가
+      document.getElementById('btn-add-task').onclick = () => {
+        if (!taskInput.value.trim()) return;
+        addDoc(getDbPath("tasks"), { text: taskInput.value.trim(), completed: false, createdAt: Date.now() });
+        taskInput.value = '';
+      };
+
+      // 메모 저장
+      const memoStatus = document.getElementById('memo-status');
+      memoInput.addEventListener('input', () => {
+        memoStatus.textContent = '저장 중...';
+        clearTimeout(memoTimeout);
+        memoTimeout = setTimeout(() => {
+          setDoc(getDocPath("memo"), { content: memoInput.value }, { merge: true });
+          memoStatus.textContent = '저장됨';
+          setTimeout(() => memoStatus.textContent = '', 2000);
+        }, 800);
+      });
+      
+      // 습관 체크 저장
+      for (let i = 0; i < 4; i++) {
+        const cb = document.getElementById(`habit-${i}`);
+        cb.addEventListener('change', () => setDoc(getDocPath("habits"), { [`habit_${i}`]: cb.checked }, { merge: true }));
+      }
+    }
+
+    function loadDataForCurrentMode() {
+      cleanupListeners();
+      attachGlobalListeners();
+
+      // 1. 할 일 불러오기
       const taskListEl = document.getElementById('task-list');
-      const taskInput = document.getElementById('task-input');
-      unsubscribeTasks = onSnapshot(query(collection(db, "tasks"), orderBy("createdAt", "asc")), (snapshot) => {
+      taskInput.value = ''; // 모드 바꿀 때 입력창 초기화
+      
+      unsubscribeTasks = onSnapshot(query(getDbPath("tasks"), orderBy("createdAt", "asc")), (snapshot) => {
         taskListEl.innerHTML = '';
         snapshot.forEach((docSnap) => {
           const task = docSnap.data();
@@ -188,7 +299,7 @@
           checkbox.checked = task.completed;
           checkbox.onclick = (e) => {
             e.stopPropagation();
-            updateDoc(doc(db, "tasks", docSnap.id), { completed: !task.completed });
+            updateDoc(doc(getDbPath("tasks").firestore, getDbPath("tasks").path, docSnap.id), { completed: !task.completed });
           };
           
           const text = document.createElement('span');
@@ -200,7 +311,7 @@
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'btn-delete';
           deleteBtn.textContent = '삭제';
-          deleteBtn.onclick = () => deleteDoc(doc(db, "tasks", docSnap.id));
+          deleteBtn.onclick = () => deleteDoc(doc(getDbPath("tasks").firestore, getDbPath("tasks").path, docSnap.id));
           
           li.appendChild(content);
           li.appendChild(deleteBtn);
@@ -208,28 +319,17 @@
         });
       });
 
-      document.getElementById('btn-add-task').onclick = () => {
-        if (!taskInput.value.trim()) return;
-        addDoc(collection(db, "tasks"), { text: taskInput.value.trim(), completed: false, createdAt: Date.now() });
-        taskInput.value = '';
-      };
-
-      // 2. 메모 & 습관 동기화 (기존과 동일)
-      const memoInput = document.getElementById('memo-input');
-      const memoStatus = document.getElementById('memo-status');
-      unsubscribeMemo = onSnapshot(doc(db, "shared", "memo"), (docSnap) => {
-        if (docSnap.exists() && document.activeElement !== memoInput) memoInput.value = docSnap.data().content;
-      });
-      memoInput.addEventListener('input', () => {
-        memoStatus.textContent = '저장 중...';
-        setTimeout(() => {
-          setDoc(doc(db, "shared", "memo"), { content: memoInput.value }, { merge: true });
-          memoStatus.textContent = '저장됨';
-          setTimeout(() => memoStatus.textContent = '', 2000);
-        }, 1000);
+      // 2. 메모 불러오기
+      memoInput.value = '';
+      unsubscribeMemo = onSnapshot(getDocPath("memo"), (docSnap) => {
+        if (docSnap.exists() && document.activeElement !== memoInput) {
+          memoInput.value = docSnap.data().content || '';
+        }
       });
 
-      unsubscribeHabits = onSnapshot(doc(db, "shared", "habits"), (docSnap) => {
+      // 3. 습관 불러오기
+      for(let i=0; i<4; i++) document.getElementById(`habit-${i}`).checked = false;
+      unsubscribeHabits = onSnapshot(getDocPath("habits"), (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           for (let i = 0; i < 4; i++) {
@@ -238,10 +338,6 @@
           }
         }
       });
-      for (let i = 0; i < 4; i++) {
-        const cb = document.getElementById(`habit-${i}`);
-        cb.addEventListener('change', () => setDoc(doc(db, "shared", "habits"), { [`habit_${i}`]: cb.checked }, { merge: true }));
-      }
     }
   </script>
 </body>
