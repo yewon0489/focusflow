@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusFlow Dashboard</title>
+  <style>
+    /* CSS 디자인은 기존과 동일하게 유지하여 예쁜 다크모드를 유지합니다 */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; padding: 24px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 1080px; display: flex; flex-direction: column; gap: 20px; }
+    .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 32px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .header-title h1 { font-size: 24px; font-weight: 700; color: #4ade80; letter-spacing: -0.5px; }
+    .header-title p { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+    .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 12px 20px; border-radius: 12px; text-align: right; }
+    .clock-time { font-size: 28px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 2px; }
+    .clock-date { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+    .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 20px; }
+    @media (max-width: 860px) { .grid-layout { grid-template-columns: 1fr; } }
+    .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; position: relative; }
+    .card h2 { font-size: 16px; font-weight: 600; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .input-group { display: flex; gap: 8px; }
+    input[type="text"] { flex: 1; background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; }
+    input[type="text"]:focus { border-color: #38bdf8; }
+    button.btn-add { background: #38bdf8; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; font-size: 13px; }
+    button.btn-add:hover { background: #7dd3fc; }
+    .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
+    .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+    .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; }
+    .list-item.completed span { text-decoration: line-through; color: #64748b; }
+    .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; }
+    .habit-item { display: flex; justify-content: space-between; align-items: center; background: #212832; padding: 12px; border-radius: 8px; font-size: 14px; }
+    .habit-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; }
+    textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 140px; outline: none; line-height: 1.5; }
+    textarea:focus { border-color: #4ade80; }
+    .sync-status { position: absolute; top: 20px; right: 20px; font-size: 12px; color: #4ade80; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header class="header-banner">
+      <div class="header-title">
+        <h1>FocusFlow™ Cloud System</h1>
+        <p>실시간 동기화 중 🟢</p>
+      </div>
+      <div class="clock-widget">
+        <div class="clock-time" id="realtime-clock">00:00:00</div>
+        <div class="clock-date" id="realtime-date">YYYY-MM-DD</div>
+      </div>
+    </header>
+
+    <div class="grid-layout">
+      <!-- 1. Memo -->
+      <section class="card">
+        <h2>📌 빠른 메모 & 리마인더</h2>
+        <span class="sync-status" id="memo-status"></span>
+        <textarea id="memo-input" placeholder="데이터가 클라우드에 실시간으로 저장됩니다..."></textarea>
+      </section>
+
+      <!-- 2. Tasks -->
+      <section class="card">
+        <h2>✅ 오늘 할 일 (Tasks)</h2>
+        <div class="input-group">
+          <input type="text" id="task-input" placeholder="새 할 일 입력 후 Enter" />
+          <button class="btn-add" id="btn-add-task">추가</button>
+        </div>
+        <ul class="list" id="task-list"></ul>
+      </section>
+
+      <!-- 3. Habits -->
+      <section class="card">
+        <h2>🌱 일일 루틴 & 습관</h2>
+        <div class="list" id="habit-list">
+          <div class="habit-item"><label><input type="checkbox" id="habit-0" /><span>📚 데일리 리딩 & 리서치</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-1" /><span>🏃‍♂️ 운동 및 스트레칭</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-2" /><span>💧 물 2L 마시기</span></label></div>
+          <div class="habit-item"><label><input type="checkbox" id="habit-3" /><span>🌙 오늘 하루 회고 작성</span></label></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Firebase 연동 스크립트 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy } 
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 전달해주신 Firebase API 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuTcliFNf8xknWzB1Y8w6AdSSfxop4_8M",
+      authDomain: "focusflow-db-9b872.firebaseapp.com",
+      projectId: "focusflow-db-9b872",
+      storageBucket: "focusflow-db-9b872.firebasestorage.app",
+      messagingSenderId: "125507292387",
+      appId: "1:125507292387:web:a4ad3ed445bda83ff289d6",
+      measurementId: "G-1BVJ54ESHM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- 시계 로직 ---
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('realtime-clock').textContent = 
+        `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      document.getElementById('realtime-date').textContent = 
+        now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    // --- 1. 할 일 (Tasks) 실시간 동기화 ---
+    const taskListEl = document.getElementById('task-list');
+    const taskInput = document.getElementById('task-input');
+    const tasksQuery = query(collection(db, "tasks"), orderBy("createdAt", "asc"));
+
+    // DB 데이터가 바뀔 때마다 화면 자동 업데이트
+    onSnapshot(tasksQuery, (snapshot) => {
+      taskListEl.innerHTML = '';
+      snapshot.forEach((docSnap) => {
+        const task = docSnap.data();
+        const id = docSnap.id;
+        
+        const li = document.createElement('li');
+        li.className = `list-item ${task.completed ? 'completed' : ''}`;
+        
+        const content = document.createElement('div');
+        content.className = 'list-item-content';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.completed;
+        checkbox.onclick = (e) => {
+          e.stopPropagation();
+          updateDoc(doc(db, "tasks", id), { completed: !task.completed });
+        };
+        
+        const text = document.createElement('span');
+        text.textContent = task.text;
+        
+        content.appendChild(checkbox);
+        content.appendChild(text);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete';
+        deleteBtn.textContent = '삭제';
+        deleteBtn.onclick = () => deleteDoc(doc(db, "tasks", id));
+        
+        li.appendChild(content);
+        li.appendChild(deleteBtn);
+        taskListEl.appendChild(li);
+      });
+    });
+
+    // 새 할 일 추가 로직
+    async function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+      taskInput.value = '';
+      await addDoc(collection(db, "tasks"), { text: text, completed: false, createdAt: Date.now() });
+    }
+    document.getElementById('btn-add-task').onclick = addTask;
+    taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
+
+    // --- 2. 메모 실시간 동기화 ---
+    const memoInput = document.getElementById('memo-input');
+    const memoStatus = document.getElementById('memo-status');
+    const memoDocRef = doc(db, "shared", "memo");
+
+    // 다른 기기에서 메모를 수정하면 즉시 반영
+    onSnapshot(memoDocRef, (docSnap) => {
+      if (docSnap.exists() && document.activeElement !== memoInput) {
+        memoInput.value = docSnap.data().content;
+      }
+    });
+
+    // 내가 메모를 입력할 때 DB에 저장 (입력 멈추고 1초 뒤 자동 저장)
+    let memoTimeout;
+    memoInput.addEventListener('input', () => {
+      memoStatus.textContent = '저장 중...';
+      clearTimeout(memoTimeout);
+      memoTimeout = setTimeout(async () => {
+        await setDoc(memoDocRef, { content: memoInput.value }, { merge: true });
+        memoStatus.textContent = '저장됨';
+        setTimeout(() => memoStatus.textContent = '', 2000);
+      }, 1000);
+    });
+
+    // --- 3. 습관 트래커 실시간 동기화 ---
+    const habitDocRef = doc(db, "shared", "habits");
+    
+    // DB에서 체크 상태 불러오기
+    onSnapshot(habitDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        for (let i = 0; i < 4; i++) {
+          const cb = document.getElementById(`habit-${i}`);
+          if (cb) cb.checked = data[`habit_${i}`] || false;
+        }
+      }
+    });
+
+    // 체크박스 클릭 시 DB에 업데이트
+    for (let i = 0; i < 4; i++) {
+      const cb = document.getElementById(`habit-${i}`);
+      cb.addEventListener('change', async () => {
+        await setDoc(habitDocRef, { [`habit_${i}`]: cb.checked }, { merge: true });
+      });
+    }
+  </script>
+</body>
+</html>
