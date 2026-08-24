@@ -69,7 +69,7 @@
     .room-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 12px 20px; border-radius: 12px; border: 1px solid #334155; }
     .room-code-badge { background: #0f1115; padding: 4px 12px; border-radius: 6px; font-family: monospace; color: #38bdf8; font-size: 15px; font-weight: bold; }
     
-    /* 픽셀 캔버스 UI 유지 */
+    /* 픽셀 캔버스 UI */
     .status-controls { display: flex; gap: 10px; background: #181d24; padding: 10px 20px; border-radius: 12px; border: 1px solid #28323e; align-items: center; justify-content: center; }
     .status-controls span { color: #94a3b8; font-size: 14px; margin-right: 10px; }
     .btn-status { background: #212832; border: 1px solid #334155; color: #e2e8f0; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 14px; }
@@ -97,6 +97,7 @@
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
+    <!-- 버튼 클릭 시 이제 팝업 방식으로 열립니다 -->
     <button class="btn-google" id="btn-login">Google 계정으로 로그인</button>
   </div>
 
@@ -126,11 +127,10 @@
       <section class="card"><h2 class="card-title">🌱 나의 일일 루틴</h2><div class="input-group"><input type="text" id="personal-routine-input"/><button class="btn-action" id="btn-add-personal-routine">추가</button></div><ul class="list" id="personal-routine-list"></ul></section>
     </div>
 
-    <!-- [B-1] 로비 화면 (히스토리 기능 추가) -->
+    <!-- [B-1] 로비 화면 -->
     <div id="team-lobby">
       <h2>🏢 팀 워크스페이스 로비</h2>
       
-      <!-- 기존 코드 입력 박스 -->
       <div class="lobby-box">
         <input type="text" id="invite-code-input" placeholder="초대 코드 입력 (예: A1B2C3)" maxlength="6" style="text-transform: uppercase;"/>
         <button class="btn-action" id="btn-join-room" style="padding: 12px;">입장하기</button>
@@ -138,11 +138,9 @@
         <button class="btn-action" id="btn-create-room" style="padding: 12px; background: transparent; border: 1px solid #38bdf8; color: #38bdf8;">+ 새로운 방 생성하기</button>
       </div>
 
-      <!-- 참여 중인 방 목록 (자동 렌더링) -->
       <div class="room-list-container" id="my-room-list" style="display: none;">
         <h3>내 워크스페이스 목록</h3>
         <div id="joined-rooms-wrapper" style="display: flex; flex-direction: column; gap: 8px;">
-          <!-- 방 목록이 여기에 표시됩니다 -->
         </div>
       </div>
     </div>
@@ -178,7 +176,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy, getDoc } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } 
+    // 💡 에러의 원인이었던 Redirect를 지우고, 성공했던 Popup으로 되돌렸습니다.
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -235,9 +234,15 @@
     }
 
     setInterval(() => { const now = new Date(); document.getElementById('realtime-clock').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`; }, 1000);
-    document.getElementById('btn-login').addEventListener('click', () => signInWithRedirect(auth, provider));
+    
+    // 💡 클릭 시 팝업으로 인증 창 띄우기
+    document.getElementById('btn-login').addEventListener('click', () => {
+      signInWithPopup(auth, provider).catch(error => {
+        alert("로그인 에러: " + error.message);
+      });
+    });
+    
     document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-    getRedirectResult(auth).catch(e => console.error(e));
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -274,10 +279,8 @@
         document.getElementById('personal-view').style.display = 'none';
         
         if (activeRoomCode) {
-          // 이미 방에 들어가 있다면 방 유지
           document.getElementById('team-room-view').style.display = 'flex';
         } else {
-          // 로비 진입 시 내가 가입된 방 목록 불러오기
           document.getElementById('team-lobby').style.display = 'flex';
           document.getElementById('team-room-view').style.display = 'none';
           loadMyJoinedRooms();
@@ -285,7 +288,6 @@
       }
     }
 
-    // --- [워크스페이스 목록 불러오기 로직] ---
     let unsubJoinedRooms;
     function loadMyJoinedRooms() {
       if(unsubJoinedRooms) unsubJoinedRooms();
@@ -306,7 +308,6 @@
               <span class="room-name">📌 ${data.name}</span>
               <span class="room-code">${docSnap.id}</span>
             `;
-            // 원클릭 재입장
             div.onclick = () => showTeamRoom(docSnap.id, data.name);
             wrapper.appendChild(div);
           });
@@ -314,15 +315,12 @@
       });
     }
 
-    // --- [방 생성 및 입장 시 이름 저장 로직 추가] ---
     document.getElementById('btn-create-room').addEventListener('click', async () => {
       const roomName = prompt("생성할 워크스페이스의 이름을 입력하세요.\n(예: 마케팅 기획팀, 동아리 회의방)");
       if(!roomName || !roomName.trim()) return;
 
       const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      // 방 자체 데이터 생성
       await setDoc(doc(db, "rooms", newCode), { createdAt: Date.now(), name: roomName.trim(), createdBy: currentUser.uid });
-      // 유저의 '참여 목록'에 자동 등록
       await setDoc(doc(db, "users", currentUser.uid, "joinedRooms", newCode), { name: roomName.trim(), joinedAt: Date.now() });
       
       showTeamRoom(newCode, roomName.trim());
@@ -335,7 +333,6 @@
       const roomSnap = await getDoc(doc(db, "rooms", code));
       if(roomSnap.exists()) {
         const roomName = roomSnap.data().name || "알 수 없는 방";
-        // 유저의 '참여 목록'에 등록 (처음 입장 시)
         await setDoc(doc(db, "users", currentUser.uid, "joinedRooms", code), { name: roomName, joinedAt: Date.now() });
         showTeamRoom(code, roomName);
         document.getElementById('invite-code-input').value = '';
@@ -352,20 +349,17 @@
       document.getElementById('team-room-view').style.display = 'none';
       document.getElementById('team-lobby').style.display = 'flex';
       if(unsubRoomUsers) unsubRoomUsers();
-      // 로비로 나왔으니 목록 갱신
       loadMyJoinedRooms();
     });
 
     let unsubRoomUsers;
     function showTeamRoom(code, roomName) {
       activeRoomCode = code;
-      // 상단 배지에 방 이름과 코드를 함께 표시
       document.getElementById('current-room-code-display').textContent = `${roomName} (${code})`;
       
       document.getElementById('team-lobby').style.display = 'none';
       document.getElementById('team-room-view').style.display = 'flex';
       
-      // 상태 초기화(업무 중) 후 아바타 표시
       document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
       document.querySelector('.btn-status[data-status="work"]').classList.add('active');
       updateMyStatus('work');
