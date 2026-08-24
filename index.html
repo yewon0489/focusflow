@@ -8,7 +8,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; }
     
-    /* 모드에 따른 배경색 미세 변화 (시각적 구분) */
     body.team-mode { background-color: #0d151c; }
 
     #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
@@ -20,7 +19,6 @@
     #main-dashboard { display: none; width: 100%; max-width: 1080px; padding: 24px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 20px; }
     
     .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
-    /* 팀 모드일 때 헤더 배너 색상 변경 */
     body.team-mode .header-banner { background: linear-gradient(135deg, #111d2e 0%, #0a111b 100%); border-color: #1e3a5f; }
 
     .user-profile { display: flex; align-items: center; gap: 12px; }
@@ -32,7 +30,6 @@
     
     .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; }
     
-    /* 모드 전환 토글 스위치 */
     .mode-toggle { display: flex; background: #0f1115; border-radius: 10px; padding: 4px; border: 1px solid #28323e; }
     .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
     .mode-btn.active.personal { background: #4ade80; color: #0f1115; }
@@ -61,7 +58,6 @@
     .habit-item { display: flex; justify-content: space-between; align-items: center; background: #212832; padding: 12px; border-radius: 8px; font-size: 14px; }
     .habit-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; }
     
-    /* 체크박스 색상 모드별 변경 */
     input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; }
     body.team-mode input[type="checkbox"] { accent-color: #38bdf8; }
 
@@ -71,7 +67,6 @@
 </head>
 <body>
 
-  <!-- 로그인 화면 -->
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
@@ -81,7 +76,6 @@
     </button>
   </div>
 
-  <!-- 메인 대시보드 -->
   <div id="main-dashboard">
     <header class="header-banner">
       <div class="user-profile">
@@ -92,7 +86,6 @@
         </div>
       </div>
       
-      <!-- 워크스페이스 전환 토글 -->
       <div class="mode-toggle">
         <button class="mode-btn active personal" id="btn-mode-personal">👤 개인 공간</button>
         <button class="mode-btn team" id="btn-mode-team">🤝 팀 공유</button>
@@ -135,7 +128,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
+    // 수정된 부분: signInWithPopup 대신 signInWithRedirect를 사용합니다.
+    import { getAuth, signInWithRedirect, GoogleAuthProvider, signOut, onAuthStateChanged, getRedirectResult } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -154,9 +148,8 @@
     const provider = new GoogleAuthProvider();
 
     let currentUserUid = null;
-    let currentMode = 'personal'; // 'personal' or 'team'
+    let currentMode = 'personal'; 
     
-    // UI 요소
     const body = document.body;
     const btnModePersonal = document.getElementById('btn-mode-personal');
     const btnModeTeam = document.getElementById('btn-mode-team');
@@ -164,16 +157,23 @@
     const titleTasks = document.getElementById('title-tasks');
     const titleHabits = document.getElementById('title-habits');
     
-    // 시계
     setInterval(() => {
       const now = new Date();
       document.getElementById('realtime-clock').textContent = 
         `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     }, 1000);
 
-    // 로그인 관리
-    document.getElementById('btn-login').addEventListener('click', () => signInWithPopup(auth, provider));
+    // 로그인 버튼 클릭 시 팝업 대신 전체 화면 넘김(Redirect)으로 실행
+    document.getElementById('btn-login').addEventListener('click', () => {
+      signInWithRedirect(auth, provider);
+    });
+    
     document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+    // 리다이렉트 후 에러 캐치용 (에러가 있으면 콘솔이나 알림으로 보여줌)
+    getRedirectResult(auth).catch((error) => {
+      alert("로그인 중 문제가 발생했습니다: " + error.message);
+    });
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -183,7 +183,7 @@
         document.getElementById('user-name').textContent = `${user.displayName}님`;
         document.getElementById('user-photo').src = user.photoURL;
         
-        switchMode('personal'); // 로그인 시 기본은 개인 모드
+        switchMode('personal'); 
       } else {
         currentUserUid = null;
         document.getElementById('login-screen').style.display = 'flex';
@@ -192,14 +192,11 @@
       }
     });
 
-    // 모드 전환 로직
     btnModePersonal.addEventListener('click', () => switchMode('personal'));
     btnModeTeam.addEventListener('click', () => switchMode('team'));
 
     function switchMode(mode) {
       currentMode = mode;
-      
-      // UI 변경 (색상 및 텍스트)
       if (mode === 'personal') {
         body.classList.remove('team-mode');
         btnModePersonal.classList.add('active');
@@ -215,20 +212,17 @@
         titleTasks.textContent = '🚀 팀 프로젝트 마일스톤';
         titleHabits.textContent = '📊 팀 공동 체크리스트';
       }
-
       loadDataForCurrentMode();
     }
 
-    // 데이터베이스 로직
     let unsubscribeTasks, unsubscribeMemo, unsubscribeHabits;
     const taskInput = document.getElementById('task-input');
     const memoInput = document.getElementById('memo-input');
     
-    // DB 경로 생성 함수 (모드에 따라 경로 분리)
     const getDbPath = (collectionName) => {
       return currentMode === 'personal' 
         ? collection(db, "users", currentUserUid, collectionName)
-        : collection(db, "team_workspace", "main_room", collectionName); // 팀 공용 경로
+        : collection(db, "team_workspace", "main_room", collectionName); 
     };
     const getDocPath = (docName) => {
       return currentMode === 'personal'
@@ -242,7 +236,6 @@
       if(unsubscribeHabits) unsubscribeHabits();
     }
 
-    // 전역 이벤트 리스너(할 일 추가, 메모 입력)는 한 번만 등록되도록 관리
     let isEventListenersAttached = false;
     let memoTimeout;
 
@@ -250,14 +243,12 @@
       if (isEventListenersAttached) return;
       isEventListenersAttached = true;
 
-      // 할 일 추가
       document.getElementById('btn-add-task').onclick = () => {
         if (!taskInput.value.trim()) return;
         addDoc(getDbPath("tasks"), { text: taskInput.value.trim(), completed: false, createdAt: Date.now() });
         taskInput.value = '';
       };
 
-      // 메모 저장
       const memoStatus = document.getElementById('memo-status');
       memoInput.addEventListener('input', () => {
         memoStatus.textContent = '저장 중...';
@@ -269,7 +260,6 @@
         }, 800);
       });
       
-      // 습관 체크 저장
       for (let i = 0; i < 4; i++) {
         const cb = document.getElementById(`habit-${i}`);
         cb.addEventListener('change', () => setDoc(getDocPath("habits"), { [`habit_${i}`]: cb.checked }, { merge: true }));
@@ -280,9 +270,8 @@
       cleanupListeners();
       attachGlobalListeners();
 
-      // 1. 할 일 불러오기
       const taskListEl = document.getElementById('task-list');
-      taskInput.value = ''; // 모드 바꿀 때 입력창 초기화
+      taskInput.value = ''; 
       
       unsubscribeTasks = onSnapshot(query(getDbPath("tasks"), orderBy("createdAt", "asc")), (snapshot) => {
         taskListEl.innerHTML = '';
@@ -319,7 +308,6 @@
         });
       });
 
-      // 2. 메모 불러오기
       memoInput.value = '';
       unsubscribeMemo = onSnapshot(getDocPath("memo"), (docSnap) => {
         if (docSnap.exists() && document.activeElement !== memoInput) {
@@ -327,7 +315,6 @@
         }
       });
 
-      // 3. 습관 불러오기
       for(let i=0; i<4; i++) document.getElementById(`habit-${i}`).checked = false;
       unsubscribeHabits = onSnapshot(getDocPath("habits"), (docSnap) => {
         if (docSnap.exists()) {
