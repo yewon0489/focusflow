@@ -247,7 +247,7 @@ function showTeamRoom(code) {
     });
   });
 
-  // 💡 마일스톤 대시보드 로직 (스프레드시트 형태)
+  // 💡 마일스톤 대시보드 로직 (스프레드시트 형태 - 시작일 추가됨)
   unsubTTask = onSnapshot(query(collection(db, "rooms", code, "tasks"), orderBy("createdAt", "asc")), s => {
     const tbody = document.getElementById('team-task-list'); 
     if(!tbody) return;
@@ -282,11 +282,20 @@ function showTeamRoom(code) {
       tdName.textContent = data.text;
       if(data.status === '완료') { tdName.style.textDecoration = 'line-through'; tdName.style.color = '#64748b'; }
 
-      // 마감일
+      // 💡 마감일 -> 기간 (시작일 ~ 마감일)
       const tdDate = document.createElement('td');
-      tdDate.textContent = data.dueDate || '-';
+      const startStr = data.startDate || '?';
+      const dueStr = data.dueDate || '?';
+      
+      if (startStr === '?' && dueStr === '?') {
+        tdDate.textContent = '-';
+      } else {
+        tdDate.textContent = `${startStr} ~ ${dueStr}`;
+      }
+
       if (data.dueDate && data.status !== '완료') {
           const today = new Date().toISOString().split('T')[0];
+          // 마감일이 지났으면 글씨를 붉게 표시
           if (data.dueDate < today) { tdDate.style.color = '#ef4444'; tdDate.style.fontWeight = 'bold'; } 
           else if (data.dueDate === today) { tdDate.style.color = '#f97316'; tdDate.style.fontWeight = 'bold'; } 
       }
@@ -322,11 +331,12 @@ function showTeamRoom(code) {
     }
   });
   
-  // 새 작업 등록 로직
+  // 💡 새 작업 등록 로직 (시작일 추가)
   const btnAddTask = document.getElementById('btn-add-team-task');
   if(btnAddTask) {
     btnAddTask.onclick = () => {
       const textInp = document.getElementById('ms-input-text');
+      const startDateInp = document.getElementById('ms-input-start-date');
       const dateInp = document.getElementById('ms-input-date');
       const linkInp = document.getElementById('ms-input-link');
       
@@ -334,15 +344,19 @@ function showTeamRoom(code) {
         addDoc(collection(db, "rooms", code, "tasks"), { 
           text: textInp.value.trim(), 
           status: '대기',
+          startDate: startDateInp.value || '',
           dueDate: dateInp.value || '',
           link: linkInp.value.trim() || '',
           createdAt: Date.now() 
         }); 
-        textInp.value = ''; dateInp.value = ''; linkInp.value = '';
+        textInp.value = ''; 
+        if(startDateInp) startDateInp.value = ''; 
+        dateInp.value = ''; 
+        linkInp.value = '';
       }
     };
   }
-} // <--- 여기가 showTeamRoom 함수의 끝 괄호입니다.
+} 
 
 function renderZonesAndStatus() {
   const canvasArea = document.getElementById('canvas-area');
