@@ -98,11 +98,7 @@ textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; p
 .theme-space { background: #1e1b4b; border: 2px solid #4c1d95; background-image: radial-gradient(#a78bfa 1px, transparent 1px); background-size: 40px 40px; }
 .theme-space .zone { border: 2px dashed #8b5cf6; color: #c4b5fd; background: rgba(76, 29, 149, 0.3); }
 
-/* 구역 이름이 캐릭터와 겹치지 않도록 상단 배치 */
 .zone { position: absolute; border-radius: 10px; display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; font-size: 12px; font-weight: bold; }
-
-/* 캐릭터 호버 시 나타나는 인라인 상태 메시지 입력창 */
-.status-input-inline { background: #0f1115; border: 1px solid #38bdf8; color: #f8fafc; font-size: 11px; padding: 3px 8px; border-radius: 6px; outline: none; width: 130px; text-align: center; }
 
 .avatar { position: absolute; z-index: 20; display: flex; flex-direction: column; align-items: center; transition: top 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translate(-50%, -50%); }
 .avatar-bubble { background: #ffffff; color: #0f1115; font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 10px; margin-bottom: -4px; opacity: 0; transition: opacity 0.3s; z-index: 30; white-space: nowrap; }
@@ -110,40 +106,7 @@ textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; p
 .avatar-body { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); display: flex; justify-content: center; align-items: center; }
 .avatar-name { background: rgba(15, 17, 21, 0.9); color: #e2e8f0; font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid #475569; margin-top: 2px; }
 .avatar.active-user .avatar-name { border-color: #38bdf8; color: #38bdf8; font-weight: bold; }
-
-@media (max-width: 860px) {
-  body { padding: 4px; } 
-  #main-dashboard { padding: 8px; gap: 12px; } 
-  /* 카드들을 1열로 세로 정렬 */
-  .grid-layout, #team-room-view .grid-layout { grid-template-columns: 1fr !important; gap: 14px; } 
-  .goals-grid { grid-template-columns: 1fr; }
-  .header-banner { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; } 
-  .user-profile { justify-content: center; }
-  .pixel-canvas { height: 260px; } 
-  .zone { font-size: 11px; }
-
-  /* 💡 마일스톤 모바일 최적화 */
-  .milestone-summary { gap: 8px; flex-direction: column; align-items: flex-start; }
-  .milestone-input-group { flex-direction: column; }
-  .milestone-input-group input { width: 100%; }
-  
-  /* 스마트폰에서 표가 찌그러지지 않고 가로로 스와이프 되도록 설정 */
-  .milestone-table-container { overflow-x: auto; padding-bottom: 5px; }
-  .milestone-table { min-width: 500px; }
-}
-
-/* === 📝 포스트잇 위젯 스타일 === */
-.fab-btn { position: fixed; bottom: 20px; right: 20px; background: #fbbf24; color: #1c1917; border: none; border-radius: 20px; padding: 12px 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 99; transition: transform 0.2s; }
-.fab-btn:hover { transform: translateY(-2px); }
-
-.postit-container { position: fixed; bottom: 70px; right: 20px; width: 280px; background: #fef08a; box-shadow: 5px 10px 25px rgba(0,0,0,0.5); border-radius: 4px 4px 8px 8px; z-index: 100; display: flex; flex-direction: column; transform-origin: bottom right; animation: popUp 0.2s ease-out; }
-@keyframes popUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-
-.postit-header { background: #fde047; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: grab; font-size: 13px; font-weight: bold; color: #854d0e; }
-.postit-header:active { cursor: grabbing; }
-.postit-header button { background: transparent; border: none; color: #854d0e; font-size: 18px; cursor: pointer; line-height: 1; }
-
-#postit-content { background: #fef08a; border: none; width: 100%; height: 220px; padding: 12px; font-size: 14px; color: #422006; resize: none; outline: none; line-height: 1.5; font-family: "Comic Sans MS", "Chalkboard SE", sans-serif; border-radius: 0 0 8px 8px; }
+.status-input-inline { background: #0f1115; border: 1px solid #38bdf8; color: #f8fafc; font-size: 11px; padding: 3px 8px; border-radius: 6px; outline: none; width: 130px; text-align: center; }
 
 /* === 🚀 마일스톤 트래커 현황판 스타일 === */
 .milestone-summary { display: flex; gap: 15px; background: #0f1115; padding: 12px 16px; border-radius: 8px; border: 1px solid #2d3748; margin-bottom: 12px; flex-wrap: wrap; justify-content: space-between; }
@@ -167,3 +130,37 @@ textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; p
 
 .ms-link-btn { background: #334155; color: #f8fafc; padding: 4px 8px; border-radius: 6px; text-decoration: none; font-size: 11px; display: inline-block; transition: 0.2s; border: 1px solid #475569; }
 .ms-link-btn:hover { background: #475569; border-color: #94a3b8; }
+
+/* === 📝 포스트잇 위젯 스타일 === */
+.fab-btn { position: fixed; bottom: 20px; right: 20px; background: #fbbf24; color: #1c1917; border: none; border-radius: 20px; padding: 12px 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 99; transition: transform 0.2s; }
+.fab-btn:hover { transform: translateY(-2px); }
+
+.postit-container { position: fixed; bottom: 70px; right: 20px; width: 280px; background: #fef08a; box-shadow: 5px 10px 25px rgba(0,0,0,0.5); border-radius: 4px 4px 8px 8px; z-index: 100; display: flex; flex-direction: column; transform-origin: bottom right; animation: popUp 0.2s ease-out; }
+@keyframes popUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+.postit-header { background: #fde047; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: grab; font-size: 13px; font-weight: bold; color: #854d0e; }
+.postit-header:active { cursor: grabbing; }
+.postit-header button { background: transparent; border: none; color: #854d0e; font-size: 18px; cursor: pointer; line-height: 1; }
+
+#postit-content { background: #fef08a; border: none; width: 100%; height: 220px; padding: 12px; font-size: 14px; color: #422006; resize: none; outline: none; line-height: 1.5; font-family: "Comic Sans MS", "Chalkboard SE", sans-serif; border-radius: 0 0 8px 8px; }
+
+/* === 📱 모바일 최적화 (이 부분이 최우선 적용됩니다!) === */
+@media (max-width: 860px) {
+  body { padding: 4px; } 
+  #main-dashboard { padding: 8px; gap: 12px; } 
+  .grid-layout, #team-room-view .grid-layout { grid-template-columns: 1fr !important; gap: 14px; } 
+  .goals-grid { grid-template-columns: 1fr; }
+  .header-banner { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; } 
+  .user-profile { justify-content: center; }
+  .pixel-canvas { height: 260px; } 
+  .zone { font-size: 11px; }
+
+  /* 💡 마일스톤 모바일 최적화 */
+  .milestone-summary { gap: 8px; flex-direction: column; align-items: flex-start; }
+  .milestone-input-group { flex-direction: column; }
+  .milestone-input-group input { width: 100%; }
+  
+  /* 스마트폰에서 표가 찌그러지지 않고 가로로 스와이프 되도록 설정 */
+  .milestone-table-container { overflow-x: auto; padding-bottom: 5px; }
+  .milestone-table { min-width: 500px; }
+}
