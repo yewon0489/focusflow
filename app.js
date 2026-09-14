@@ -244,21 +244,94 @@ function showTeamRoom(code) {
     });
   });
 
+// 💡 마일스톤 현황판 엔진으로 교체!
   unsubTTask = onSnapshot(query(collection(db, "rooms", code, "tasks"), orderBy("createdAt", "asc")), s => {
-    const list = document.getElementById('team-task-list'); list.innerHTML = '';
+    const tbody = document.getElementById('team-task-list'); tbody.innerHTML = '';
+    
+    let total = 0, progress = 0, done = 0, delayed = 0;
+
     s.forEach(d => {
-      const li = document.createElement('li'); li.className = `list-item ${d.data().completed ? 'completed' : ''}`;
-      li.innerHTML = `<div class="list-item-content"><input type="checkbox" ${d.data().completed?'checked':''}><span>${d.data().text}</span></div><button class="btn-delete">삭제</button>`;
-      li.querySelector('input').onclick = () => updateDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id), { completed: !d.data().completed });
-      li.querySelector('.btn-delete').onclick = () => deleteDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id)); list.appendChild(li);
+      const data = d.data();
+      total++;
+      if(data.status === '진행중') progress++;
+      else if(data.status === '완료') done++;
+      else if(data.status === '지연') delayed++;
+      else delayed++; // 대기 상태도 지연/대기에 포함
+
+      const tr = document.createElement('tr');
+      
+      // 1. 상태 드롭다운
+      const tdStatus = document.createElement('td');
+      const select = document.createElement('select');
+      select.className = `status-select ${data.status || '대기'}`;
+      ['대기', '진행중', '완료', '지연'].forEach(st => {
+        const opt = document.createElement('option'); opt.value = st; opt.textContent = st;
+        if(data.status === st) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.onchange = (e) => updateDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id), { status: e.target.value });
+      tdStatus.appendChild(select);
+
+      // 2. 작업명
+      const tdName = document.createElement('td');
+      tdName.textContent = data.text;
+      if(data.status === '완료') { tdName.style.textDecoration = 'line-through'; tdName.style.color = '#64748b'; }
+
+      // 3. 마감일 (기획 회의 때 나온 날짜 알림 아이디어 적용)
+      const tdDate = document.createElement('td');
+      tdDate.textContent = data.dueDate || '-';
+      if (data.dueDate && data.status !== '완료') {
+          const today = new Date().toISOString().split('T')[0];
+          if (data.dueDate < today) { tdDate.style.color = '#ef4444'; tdDate.style.fontWeight = 'bold'; } // 마감 지남 (빨간색)
+          else if (data.dueDate === today) { tdDate.style.color = '#f97316'; tdDate.style.fontWeight = 'bold'; } // 오늘 마감 (주황색)
+      }
+
+      // 4. 참조 링크 (기획안, 외부 파일 허브 역할)
+      const tdLink = document.createElement('td');
+      if(data.link) {
+        const a = document.createElement('a');
+        let validLink = data.link.startsWith('http') ? data.link : `https://${data.link}`;
+        a.href = validLink; a.target = '_blank'; a.className = 'ms-link-btn'; a.innerHTML = '🔗 문서';
+        tdLink.appendChild(a);
+      } else { tdLink.textContent = '-'; }
+
+      // 5. 관리(삭제)
+      const tdAction = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-delete'; delBtn.textContent = '삭제';
+      delBtn.onclick = () => deleteDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id));
+      tdAction.appendChild(delBtn);
+
+      tr.appendChild(tdStatus); tr.appendChild(tdName); tr.appendChild(tdDate); tr.appendChild(tdLink); tr.appendChild(tdAction);
+      tbody.appendChild(tr);
     });
+
+    // 상단 통계 수치 실시간 업데이트
+    document.getElementById('ms-total').textContent = total;
+    document.getElementById('ms-progress').textContent = progress;
+    document.getElementById('ms-done').textContent = done;
+    document.getElementById('ms-delayed').textContent = delayed;
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    document.getElementById('ms-percent').textContent = `${pct}%`;
   });
   
+  // 새 작업 등록 로직 연결
   document.getElementById('btn-add-team-task').onclick = () => {
-    const inp = document.getElementById('team-task-input');
-    if(inp.value.trim()) { addDoc(collection(db, "rooms", code, "tasks"), { text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; }
+    const textInp = document.getElementById('ms-input-text');
+    const dateInp = document.getElementById('ms-input-date');
+    const linkInp = document.getElementById('ms-input-link');
+    
+    if(textInp.value.trim()) { 
+      addDoc(collection(db, "rooms", code, "tasks"), { 
+        text: textInp.value.trim(), 
+        status: '대기',
+        dueDate: dateInp.value || '',
+        link: linkInp.value.trim() || '',
+        createdAt: Date.now() 
+      }); 
+      textInp.value = ''; dateInp.value = ''; linkInp.value = '';
+    }
   };
-}
 
 function renderZonesAndStatus() {
   const canvasArea = document.getElementById('canvas-area');
