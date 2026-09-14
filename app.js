@@ -132,6 +132,12 @@ function loadPersonalData() {
     });
     if (currentModalType) renderModalTable(currentModalType);
   });
+// --- 포스트잇 데이터 실시간 저장/불러오기 ---
+  const postitContent = document.getElementById('postit-content');
+  onSnapshot(doc(userRef, "data", "postit"), s => { 
+    if (s.exists() && document.activeElement !== postitContent) postitContent.value = s.data().text || ''; 
+  });
+  postitContent.oninput = () => { setTimeout(() => setDoc(doc(userRef, "data", "postit"), { text: postitContent.value }, { merge: true }), 800); };
 }
 
 ['daily', 'weekly', 'monthly', 'yearly'].forEach(type => {
@@ -443,3 +449,39 @@ function connectMemoBoardListener() {
   });
   tMemo.oninput = () => { setTimeout(() => setDoc(doc(db, "rooms", activeRoomCode, "memos", currentMemoBoardId), { content: tMemo.value }, { merge: true }), 800); };
 }
+
+/* === 📝 포스트잇 드래그 및 토글 로직 === */
+const postitWidget = document.getElementById('postit-widget');
+const postitHeader = document.getElementById('postit-header');
+
+document.getElementById('btn-toggle-postit').addEventListener('click', () => {
+  postitWidget.style.display = postitWidget.style.display === 'none' ? 'flex' : 'none';
+  if (postitWidget.style.display === 'flex') {
+    // 열 때 위치 초기화 (우측 하단)
+    postitWidget.style.top = 'auto'; postitWidget.style.left = 'auto';
+    postitWidget.style.bottom = '70px'; postitWidget.style.right = '20px';
+  }
+});
+document.getElementById('btn-close-postit').addEventListener('click', () => { postitWidget.style.display = 'none'; });
+
+// 드래그 앤 드롭 구현
+let isDragging = false, postitStartX, postitStartY;
+postitHeader.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  // fixed, bottom, right 속성을 top, left 기반으로 강제 변환하여 드래그 오류 방지
+  const rect = postitWidget.getBoundingClientRect();
+  postitWidget.style.bottom = 'auto'; postitWidget.style.right = 'auto';
+  postitWidget.style.left = rect.left + 'px'; postitWidget.style.top = rect.top + 'px';
+  
+  postitStartX = e.clientX - rect.left;
+  postitStartY = e.clientY - rect.top;
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  postitWidget.style.left = `${e.clientX - postitStartX}px`;
+  postitWidget.style.top = `${e.clientY - postitStartY}px`;
+});
+
+document.addEventListener('mouseup', () => { isDragging = false; });
