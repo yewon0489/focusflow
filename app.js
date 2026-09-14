@@ -296,21 +296,26 @@ function getAvatarCoordinates(statusId, uid) {
 
 function createAvatar(uid, name, status, message) {
   const coord = getAvatarCoordinates(status, uid);
-  const avatarDiv = document.createElement('div'); avatarDiv.id = `avatar-${uid}`; avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
-  avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
+  const avatarDiv = document.createElement('div'); 
+  avatarDiv.id = `avatar-${uid}`; 
+  avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
+  avatarDiv.style.top = coord.top; 
+  avatarDiv.style.left = coord.left;
+  avatarDiv.dataset.status = status; // 💡 해결: 아바타 자체에 현재 구역을 저장해 둠
   
   const isMe = (uid === currentUser.uid);
-  const bubble = document.createElement('div'); bubble.className = 'avatar-bubble'; 
+  const bubble = document.createElement('div'); 
+  bubble.className = 'avatar-bubble'; 
   
   if (isMe) {
-    // 💡 내 캐릭터에 마우스를 올리면 인라인으로 상태 입력창 생성 (엔터 시 저장)
     bubble.innerHTML = `<input type="text" class="status-input-inline" value="${message || '열일중 🔥'}" placeholder="상태 메시지 입력" />`;
     const inputEl = bubble.querySelector('input');
     inputEl.addEventListener('click', (e) => e.stopPropagation());
     inputEl.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         const newMsg = inputEl.value.trim() || '열일중 🔥';
-        updateMyStatus(status, newMsg);
+        const currentZoneId = avatarDiv.dataset.status; // 💡 해결: 옛날 기억 대신 방금 갱신된 현재 구역을 읽어옴!
+        updateMyStatus(currentZoneId, newMsg);
         inputEl.blur();
       }
     });
@@ -329,14 +334,25 @@ function createAvatar(uid, name, status, message) {
 }
 
 function updateAvatar(uid, status, message) {
-  const avatarDiv = document.getElementById(`avatar-${uid}`); if(!avatarDiv) return;
+  const avatarDiv = document.getElementById(`avatar-${uid}`); 
+  if(!avatarDiv) return;
+  
+  avatarDiv.dataset.status = status; // 💡 해결: 구역을 이동할 때마다 현재 구역 정보 갱신
   const coord = getAvatarCoordinates(status, uid);
-  avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
+  avatarDiv.style.top = coord.top; 
+  avatarDiv.style.left = coord.left;
   
   const isMe = (uid === currentUser.uid);
-  if (!isMe) {
+  if (isMe) {
+    const inputEl = avatarDiv.querySelector('.status-input-inline');
+    // 💡 해결: 내가 직접 타이핑 중일 때는 텍스트가 덮어써져서 날아가지 않도록 보호
+    if (inputEl && document.activeElement !== inputEl) {
+      inputEl.value = message || '열일중 🔥';
+    }
+  } else {
     avatarDiv.querySelector('.avatar-bubble').textContent = message || '열일중 🔥';
   }
+  
   avatarDiv.querySelector('.avatar-body').innerHTML = getRobotSVG(status, uid);
 }
 
