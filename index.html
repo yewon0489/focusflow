@@ -4,130 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow Dashboard</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0f1115; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s; padding: 10px; }
-    body.team-mode { background-color: #0b1118; }
-    
-    #login-screen { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 20px; }
-    #login-screen h1 { color: #4ade80; font-size: 32px; }
-    #login-screen p { color: #94a3b8; font-size: 14px; margin-bottom: 5px; }
-    .developer-tag { font-size: 13px; color: #64748b; font-family: monospace; letter-spacing: 1px; }
-    .btn-google { background: #ffffff; color: #0f1115; font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-    
-    #main-dashboard { display: none; width: 100%; max-width: 1200px; padding: 16px; flex-direction: column; gap: 20px; align-self: flex-start; margin-top: 10px; }
-    
-    .header-banner { background: linear-gradient(135deg, #13271f 0%, #0d1a14 100%); border: 1px solid #1f3d2f; border-radius: 16px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; transition: all 0.3s; }
-    body.team-mode .header-banner { background: linear-gradient(135deg, #111d2e 0%, #0a111b 100%); border-color: #1e3a5f; }
-    
-    .user-profile { display: flex; align-items: center; gap: 12px; }
-    .user-profile img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4ade80; }
-    body.team-mode .user-profile img { border-color: #38bdf8; }
-    .user-info-text h1 { font-size: 16px; color: #4ade80; }
-    body.team-mode .user-info-text h1 { color: #38bdf8; }
-    .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; margin-top: 2px; }
-    
-    .mode-toggle { display: flex; background: #0f1115; border-radius: 10px; padding: 4px; border: 1px solid #28323e; }
-    .mode-btn { background: transparent; border: none; color: #94a3b8; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
-    .mode-btn.active.personal { background: #4ade80; color: #0f1115; }
-    .mode-btn.active.team { background: #38bdf8; color: #0f1115; }
-    
-    .clock-widget { background: #181d24; border: 1px solid #28323e; padding: 8px 14px; border-radius: 12px; text-align: right; }
-    .clock-time { font-size: 18px; font-weight: 700; font-family: monospace; color: #f8fafc; letter-spacing: 1px; }
-    
-    /* 그리드 및 카드 기본 */
-    .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-    .card { background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px; position: relative; }
-    .card-full { grid-column: 1 / -1; }
-    .card-title { font-size: 15px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 8px; }
-    body.team-mode .card-title { color: #38bdf8; }
-    
-    .input-group { display: flex; gap: 8px; }
-    input[type="text"] { flex: 1; background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; }
-    button.btn-action { background: #4ade80; color: #0f1115; border: none; border-radius: 8px; padding: 0 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    body.team-mode button.btn-action { background: #38bdf8; }
-    
-    .list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
-    .list-item { display: flex; align-items: center; justify-content: space-between; background: #212832; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
-    .list-item-content { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; word-break: break-all; }
-    .list-item.completed span { text-decoration: line-through; color: #64748b; }
-    .btn-delete { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 13px; padding: 4px; }
-    input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4ade80; cursor: pointer; flex-shrink: 0; }
-    body.team-mode input[type="checkbox"] { accent-color: #38bdf8; }
-    textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; resize: vertical; min-height: 120px; outline: none; width: 100%; }
-    
-    /* 목표 대시보드 */
-    .goals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
-    .goal-box { background: #0f1115; border: 1px solid #2d3748; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-    .goal-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding-bottom: 6px; border-bottom: 1px dashed #2d3748; }
-    .goal-title { color: #f8fafc; font-weight: 600; font-size: 14px; }
-    .goal-title::after { content: ' ⚙️'; font-size: 11px; opacity: 0.5; }
-    .goal-percent { color: #4ade80; font-size: 16px; font-weight: bold; font-family: monospace; }
-    .progress-bar { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #4ade80; width: 0%; transition: width 0.5s ease-out; }
-    
-    .quick-goal-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 130px; overflow-y: auto; }
-    .quick-goal-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #94a3b8; word-break: break-all; }
-    .quick-goal-item.completed span { text-decoration: line-through; color: #475569; }
-    .quick-add-group { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; }
-    .quick-add-group input { flex: 1; background: #181d24; border: 1px solid #2d3748; color: #e2e8f0; font-size: 12px; padding: 6px 8px; border-radius: 6px; outline: none; }
-    .quick-add-group button { background: #2d3748; border: none; color: #e2e8f0; border-radius: 6px; padding: 0 10px; cursor: pointer; font-weight: bold; }
-    
-    .calendar-container { width: 100%; height: 350px; border-radius: 8px; overflow: hidden; border: 1px solid #2d3748; background: #0f1115; }
-
-    /* 모달 UI */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); padding: 10px; }
-    .modal-content { background: #181d24; border: 1px solid #2d3748; border-radius: 16px; width: 100%; max-width: 500px; padding: 20px; display: flex; flex-direction: column; gap: 14px; position: relative; max-height: 80vh; overflow-y: auto; }
-    .btn-close-modal { position: absolute; top: 14px; right: 14px; background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; }
-    
-    .goal-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-    .goal-table th, .goal-table td { padding: 10px; text-align: left; border-bottom: 1px solid #2d3748; font-size: 13px; }
-    
-    /* 구역(Zone) 편집기 UI */
-    .zone-edit-item { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; padding: 10px; display: flex; gap: 8px; align-items: center; }
-    .zone-edit-item input { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; border-radius: 4px; padding: 6px; font-size: 13px; outline: none; }
-    
-    #team-lobby { display: none; flex-direction: column; align-items: center; justify-content: center; background: #181d24; border: 1px solid #28323e; border-radius: 14px; padding: 30px 16px; text-align: center; gap: 20px; width: 100%; max-width: 480px; margin: auto; }
-    .lobby-box { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 320px; background: #0f1115; padding: 16px; border-radius: 12px; border: 1px solid #2d3748; }
-    .room-list-container { width: 100%; max-width: 320px; background: #0f1115; border-radius: 12px; border: 1px solid #2d3748; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
-    .room-list-item { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 10px 14px; border-radius: 8px; cursor: pointer; border: 1px solid #334155; }
-    
-    #team-room-view { display: none; flex-direction: column; gap: 16px; width: 100%; }
-    .room-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 12px 16px; border-radius: 12px; border: 1px solid #334155; flex-wrap: wrap; gap: 10px; }
-    .room-header-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .room-code-badge { background: #0f1115; padding: 4px 10px; border-radius: 6px; font-family: monospace; color: #38bdf8; font-size: 13px; font-weight: bold; }
-    .btn-edit, .btn-theme { background: #0f1115; border: 1px solid #475569; color: #e2e8f0; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
-    
-    .status-controls { display: flex; gap: 8px; background: #181d24; padding: 10px; border-radius: 12px; border: 1px solid #28323e; align-items: center; justify-content: center; flex-wrap: wrap; }
-    .btn-status { background: #212832; border: 1px solid #334155; color: #e2e8f0; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s; }
-    .btn-status.active { background: #38bdf8; color: #0f1115; font-weight: bold; border-color: #38bdf8; }
-
-    .pixel-canvas { width: 100%; height: 300px; border-radius: 14px; position: relative; overflow: hidden; }
-    .theme-blueprint { background: #0f1115; border: 2px solid #2d3748; background-image: radial-gradient(#2d3748 1px, transparent 1px); background-size: 20px 20px; }
-    .theme-blueprint .zone { border: 2px dashed #475569; color: #64748b; background: rgba(30, 41, 59, 0.4); }
-    .theme-matrix { background: #022c16; border: 2px solid #166534; background-image: linear-gradient(rgba(22, 101, 52, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(22, 101, 52, 0.3) 1px, transparent 1px); background-size: 30px 30px; }
-    .theme-matrix .zone { border: 2px solid #22c55e; color: #4ade80; background: rgba(22, 101, 52, 0.2); }
-    .theme-space { background: #1e1b4b; border: 2px solid #4c1d95; background-image: radial-gradient(#a78bfa 1px, transparent 1px); background-size: 40px 40px; }
-    .theme-space .zone { border: 2px dashed #8b5cf6; color: #c4b5fd; background: rgba(76, 29, 149, 0.3); }
-
-    .zone { position: absolute; border-radius: 10px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: bold; }
-    
-    .avatar { position: absolute; z-index: 20; display: flex; flex-direction: column; align-items: center; transition: top 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); transform: translate(-50%, -50%); }
-    .avatar-bubble { background: #ffffff; color: #0f1115; font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 10px; margin-bottom: -4px; opacity: 0; transition: opacity 0.3s; z-index: 30; white-space: nowrap; }
-    .avatar.active .avatar-bubble { opacity: 1; }
-    .avatar-body { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); display: flex; justify-content: center; align-items: center; }
-    .avatar-name { background: rgba(15, 17, 21, 0.9); color: #e2e8f0; font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid #475569; margin-top: 2px; }
-    .avatar.active-user .avatar-name { border-color: #38bdf8; color: #38bdf8; font-weight: bold; }
-
-    @media (max-width: 860px) {
-      body { padding: 4px; } #main-dashboard { padding: 8px; gap: 12px; } .grid-layout { grid-template-columns: 1fr; gap: 14px; } .goals-grid { grid-template-columns: 1fr; }
-      .header-banner { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; } .user-profile { justify-content: center; }
-      .pixel-canvas { height: 260px; } .zone { font-size: 11px; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- 로그인 화면 -->
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
@@ -135,7 +16,8 @@
     <button class="btn-google" id="btn-login">Google 계정으로 로그인</button>
   </div>
 
-  <div id="main-dashboard">
+  <!-- 메인 대시보드 -->
+  <div id="main-dashboard" style="display: none;">
     <header class="header-banner">
       <div class="user-profile">
         <img id="user-photo" src="" alt="Profile">
@@ -148,6 +30,7 @@
       <div class="clock-widget"><div class="clock-time" id="realtime-clock">00:00:00</div></div>
     </header>
 
+    <!-- [A] 개인 모드 -->
     <div class="grid-layout" id="personal-view">
       <section class="card card-full">
         <h2 class="card-title">🎯 나의 목표 달성 현황</h2>
@@ -172,7 +55,7 @@
       </section>
     </div>
 
-    <!-- 기존 목표 모달 -->
+    <!-- 목표 삭제 관리 모달 -->
     <div class="modal-overlay" id="goal-modal">
       <div class="modal-content">
         <button class="btn-close-modal" id="btn-close-modal">&times;</button>
@@ -181,7 +64,7 @@
       </div>
     </div>
     
-    <!-- 🏢 팀 구역 커스텀 모달 (Step 1 신규) -->
+    <!-- 구역 커스텀 편집 모달 -->
     <div class="modal-overlay" id="zone-modal">
       <div class="modal-content">
         <button class="btn-close-modal" id="btn-close-zone-modal">&times;</button>
@@ -193,7 +76,7 @@
       </div>
     </div>
 
-    <!-- 팀 화면 -->
+    <!-- [B] 팀 모드: 로비 -->
     <div id="team-lobby">
       <h2>🏢 팀 워크스페이스 로비</h2>
       <div class="lobby-box">
@@ -206,6 +89,7 @@
       </div>
     </div>
 
+    <!-- [C] 팀 모드: 작업실 -->
     <div id="team-room-view">
       <div class="room-header">
         <div class="room-header-left">
@@ -220,26 +104,24 @@
         </div>
       </div>
       
-      <!-- 동적 상태 컨트롤 바 -->
-      <div class="status-controls" id="dynamic-status-controls">
-        <!-- 자바스크립트가 구역 데이터를 읽고 자동으로 버튼을 생성합니다 -->
-      </div>
+      <!-- 상태 버튼 영역 (JS에서 자동 렌더링) -->
+      <div class="status-controls" id="dynamic-status-controls"></div>
 
-      <!-- 동적 픽셀 캔버스 -->
-      <div class="pixel-canvas theme-blueprint" id="canvas-area">
-        <!-- 자바스크립트가 구역 데이터를 읽고 자동으로 DIV를 생성합니다 -->
-      </div>
+      <!-- 픽셀 캔버스 (JS에서 구역 자동 렌더링) -->
+      <div class="pixel-canvas theme-blueprint" id="canvas-area"></div>
 
       <div class="grid-layout" style="grid-template-columns: 1fr 1fr;">
+        <!-- 다중 메모보드 -->
         <section class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <h2 class="card-title">📢 팀 공용 메모보드</h2>
             <div style="display:flex; gap:6px;">
               <select id="memo-board-selector" style="background:#0f1115; border:1px solid #2d3748; color:#38bdf8; border-radius:4px; padding:4px; font-size:12px; font-weight:bold; outline:none;"></select>
-              <button id="btn-add-memo-board" style="background:transparent; border:1px solid #4ade80; color:#4ade80; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer;">+ 새 채널</button>
+              <button id="btn-add-memo-board" style="background:transparent; border:1px solid #4ade80; color:#4ade80; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer;">+ 채널</button>
+              <button id="btn-delete-memo-board" style="background:transparent; border:1px solid #ef4444; color:#ef4444; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; display:none;">삭제</button>
             </div>
           </div>
-          <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 안전하게 공유됩니다."></textarea>
+          <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 공유됩니다."></textarea>
         </section>
         
         <section class="card">
@@ -251,432 +133,6 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, query, orderBy, getDoc } 
-    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } 
-    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDuTcliFNf8xknWzB1Y8w6AdSSfxop4_8M",
-      authDomain: "focusflow-db-9b872.firebaseapp.com",
-      projectId: "focusflow-db-9b872",
-      storageBucket: "focusflow-db-9b872.firebasestorage.app",
-      messagingSenderId: "125507292387",
-      appId: "1:125507292387:web:a4ad3ed445bda83ff289d6"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    let currentUser = null;
-    let currentMode = 'personal'; 
-    let activeRoomCode = null; 
-    let currentRoomName = "";
-    
-    // 💡 Step 1: 동적 구역 및 메모보드 상태 변수
-    let currentRoomZones = [];
-    let currentMemoBoardId = 'main';
-    let roomMemoBoards = [];
-    
-    // 최대 5개의 구역 배치를 위한 고정 슬롯 (안정적인 UI 제공용)
-    const SLOT_BOUNDS = [
-      { top: 8, left: 5, width: 35, height: 45 }, { top: 8, left: 50, width: 45, height: 50 },
-      { top: 60, left: 25, width: 50, height: 30 }, { top: 60, left: 5, width: 18, height: 30 }, { top: 60, left: 77, width: 18, height: 30 }
-    ];
-    
-    let allGoalsData = { daily: [], weekly: [], monthly: [], yearly: [] };
-    let currentModalType = null;
-    const themes = ['theme-blueprint', 'theme-matrix', 'theme-space'];
-    let currentThemeIndex = 0;
-
-    function getRobotSVG(statusId, uidString) {
-      let hash = 0; for (let i = 0; i < uidString.length; i++) { hash = uidString.charCodeAt(i) + ((hash << 5) - hash); }
-      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#0ea5e9', '#8b5cf6', '#ec4899'];
-      const myColor = colors[Math.abs(hash) % colors.length];
-      return `<svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="20" width="32" height="28" fill="${myColor}" rx="6"/><rect x="20" y="24" width="24" height="12" fill="#0f1115" rx="2"/><rect x="24" y="28" width="4" height="4" fill="#4ade80"/><rect x="36" y="28" width="4" height="4" fill="#4ade80"/><rect x="20" y="48" width="6" height="6" fill="#475569" rx="3"/><rect x="38" y="48" width="6" height="6" fill="#475569" rx="3"/></svg>`;
-    }
-
-    setInterval(() => { const now = new Date(); document.getElementById('realtime-clock').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`; }, 1000);
-    document.getElementById('btn-login').addEventListener('click', () => signInWithPopup(auth, provider));
-    document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-dashboard').style.display = 'flex';
-        document.getElementById('user-name').textContent = `${user.displayName}님`;
-        document.getElementById('user-photo').src = user.photoURL;
-        const userEmailForCal = encodeURIComponent(user.email);
-        document.getElementById('my-dynamic-calendar').src = `https://calendar.google.com/calendar/embed?src=${userEmailForCal}&ctz=Asia%2FSeoul&bgcolor=%230f1115&color=%234ade80&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0&mode=MONTH`;
-        switchMode('personal'); 
-      } else {
-        currentUser = null;
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('main-dashboard').style.display = 'none';
-      }
-    });
-
-    document.getElementById('btn-mode-personal').addEventListener('click', () => switchMode('personal'));
-    document.getElementById('btn-mode-team').addEventListener('click', () => switchMode('team'));
-
-    function switchMode(mode) {
-      if (mode === 'personal') {
-        document.body.classList.remove('team-mode');
-        document.getElementById('btn-mode-personal').classList.add('active');
-        document.getElementById('btn-mode-team').classList.remove('active');
-        document.getElementById('personal-view').style.display = 'grid';
-        document.getElementById('team-lobby').style.display = 'none';
-        document.getElementById('team-room-view').style.display = 'none';
-        cleanupRoomListeners(); loadPersonalData();
-      } else {
-        document.body.classList.add('team-mode');
-        document.getElementById('btn-mode-personal').classList.remove('active');
-        document.getElementById('btn-mode-team').classList.add('active');
-        document.getElementById('personal-view').style.display = 'none';
-        if (activeRoomCode) document.getElementById('team-room-view').style.display = 'flex';
-        else { document.getElementById('team-lobby').style.display = 'flex'; document.getElementById('team-room-view').style.display = 'none'; loadMyJoinedRooms(); }
-      }
-    }
-
-    /* === 개인 데이터 로드 (기존 유지) === */
-    let unsubGoals, unsubPTask;
-    function loadPersonalData() {
-      const userRef = doc(db, "users", currentUser.uid);
-      const pMemo = document.getElementById('personal-memo-input');
-      onSnapshot(doc(userRef, "data", "memo"), s => { if (s.exists() && document.activeElement !== pMemo) pMemo.value = s.data().content || ''; });
-      pMemo.oninput = () => { setTimeout(() => setDoc(doc(userRef, "data", "memo"), { content: pMemo.value }, { merge: true }), 800); };
-
-      if(unsubPTask) unsubPTask();
-      unsubPTask = onSnapshot(query(collection(userRef, "tasks"), orderBy("createdAt", "asc")), s => {
-        const list = document.getElementById('personal-task-list'); list.innerHTML = '';
-        s.forEach(d => {
-          const li = document.createElement('li'); li.className = `list-item ${d.data().completed ? 'completed' : ''}`;
-          li.innerHTML = `<div class="list-item-content"><input type="checkbox" ${d.data().completed?'checked':''}><span>${d.data().text}</span></div><button class="btn-delete">삭제</button>`;
-          li.querySelector('input').onclick = () => updateDoc(doc(collection(userRef, "tasks"), d.id), { completed: !d.data().completed });
-          li.querySelector('.btn-delete').onclick = () => deleteDoc(doc(collection(userRef, "tasks"), d.id));
-          list.appendChild(li);
-        });
-      });
-      document.getElementById('btn-add-personal-task').onclick = () => {
-        const inp = document.getElementById('personal-task-input');
-        if(inp.value.trim()) { addDoc(collection(userRef, "tasks"), { text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; }
-      };
-
-      if(unsubGoals) unsubGoals();
-      unsubGoals = onSnapshot(query(collection(userRef, "goals"), orderBy("createdAt", "asc")), (snapshot) => {
-        allGoalsData = { daily: [], weekly: [], monthly: [], yearly: [] };
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          if(allGoalsData[data.type]) allGoalsData[data.type].push({ id: docSnap.id, ...data });
-        });
-        ['daily', 'weekly', 'monthly', 'yearly'].forEach(type => {
-          const goals = allGoalsData[type]; const total = goals.length; const completed = goals.filter(g => g.completed).length;
-          const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-          document.getElementById(`pct-${type}`).textContent = `${percent}%`; document.getElementById(`bar-${type}`).style.width = `${percent}%`;
-          const listEl = document.getElementById(`list-${type}`); listEl.innerHTML = '';
-          goals.forEach(g => {
-            const li = document.createElement('li'); li.className = `quick-goal-item ${g.completed ? 'completed' : ''}`;
-            li.innerHTML = `<input type="checkbox" ${g.completed ? 'checked' : ''}><span style="flex:1;">${g.text}</span>`;
-            li.querySelector('input').addEventListener('change', () => updateDoc(doc(db, "users", currentUser.uid, "goals", g.id), { completed: !g.completed }));
-            listEl.appendChild(li);
-          });
-        });
-        if (currentModalType) renderModalTable(currentModalType);
-      });
-    }
-
-    ['daily', 'weekly', 'monthly', 'yearly'].forEach(type => {
-      const addGoal = () => { const inp = document.getElementById(`input-${type}`); if(inp.value.trim()) { addDoc(collection(db, "users", currentUser.uid, "goals"), { type: type, text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; } };
-      document.getElementById(`btn-quick-${type}`).onclick = addGoal; document.getElementById(`input-${type}`).addEventListener('keypress', (e) => { if(e.key === 'Enter') addGoal(); });
-    });
-
-    const typeNames = { daily: '일일 목표', weekly: '주간 목표', monthly: '월간 목표', yearly: '올해 목표' };
-    document.querySelectorAll('.goal-header').forEach(header => {
-      header.addEventListener('click', () => {
-        currentModalType = header.dataset.type; document.getElementById('modal-title').textContent = `${typeNames[currentModalType]} 관리 (삭제)`;
-        document.getElementById('goal-modal').style.display = 'flex'; renderModalTable(currentModalType);
-      });
-    });
-    document.getElementById('btn-close-modal').addEventListener('click', () => { document.getElementById('goal-modal').style.display = 'none'; currentModalType = null; });
-
-    function renderModalTable(type) {
-      const tbody = document.getElementById('modal-goal-tbody'); tbody.innerHTML = '';
-      const goals = allGoalsData[type] || [];
-      if (goals.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#64748b; padding:20px;">등록된 목표가 없습니다.</td></tr>`; return; }
-      goals.forEach(goal => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td class="table-check">${goal.completed ? '✅' : '⬜'}</td><td style="${goal.completed ? 'text-decoration: line-through; color: #64748b;' : ''}">${goal.text}</td><td class="table-action"><button class="btn-delete" style="font-size: 16px;" title="삭제">🗑️</button></td>`;
-        tr.querySelector('.btn-delete').addEventListener('click', () => deleteDoc(doc(db, "users", currentUser.uid, "goals", goal.id))); tbody.appendChild(tr);
-      });
-    }
-
-    /* === 🤝 팁 방 관리 로직 === */
-    let unsubJoinedRooms, unsubRoomData, unsubRoomUsers, unsubTTask, unsubTMemo;
-    function cleanupRoomListeners() { if(unsubRoomData) unsubRoomData(); if(unsubRoomUsers) unsubRoomUsers(); if(unsubTTask) unsubTTask(); if(unsubTMemo) unsubTMemo(); }
-
-    function loadMyJoinedRooms() {
-      if(unsubJoinedRooms) unsubJoinedRooms();
-      unsubJoinedRooms = onSnapshot(query(collection(db, "users", currentUser.uid, "joinedRooms"), orderBy("joinedAt", "desc")), (snapshot) => {
-        const container = document.getElementById('my-room-list'); const wrapper = document.getElementById('joined-rooms-wrapper'); wrapper.innerHTML = '';
-        if(snapshot.empty) container.style.display = 'none';
-        else { container.style.display = 'flex'; snapshot.forEach(docSnap => {
-            const data = docSnap.data(); const div = document.createElement('div'); div.className = 'room-list-item';
-            div.innerHTML = `<span class="room-name">📌 ${data.name}</span><span class="room-code">${docSnap.id}</span>`;
-            div.onclick = () => showTeamRoom(docSnap.id); wrapper.appendChild(div);
-        });}
-      });
-    }
-
-    document.getElementById('btn-create-room').addEventListener('click', async () => {
-      const roomName = prompt("생성할 워크스페이스의 이름을 입력하세요."); if(!roomName || !roomName.trim()) return;
-      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
-      // 방 생성 시 기본 3개 구역과 기본 메모보드 할당
-      const defaultZones = [
-        { id: 'zone-1', name: '업무/기획 존', emoji: '💻' },
-        { id: 'zone-2', name: '회의실', emoji: '🗣️' },
-        { id: 'zone-3', name: '휴게실', emoji: '☕' }
-      ];
-      const defaultMemoBoards = [{ id: 'main', name: '메인 보드' }];
-
-      await setDoc(doc(db, "rooms", newCode), { createdAt: Date.now(), name: roomName.trim(), theme: 'theme-blueprint', createdBy: currentUser.uid, zones: defaultZones, memoBoards: defaultMemoBoards });
-      await setDoc(doc(db, "users", currentUser.uid, "joinedRooms", newCode), { name: roomName.trim(), joinedAt: Date.now() });
-      showTeamRoom(newCode);
-    });
-
-    document.getElementById('btn-join-room').addEventListener('click', async () => {
-      const code = document.getElementById('invite-code-input').value.trim().toUpperCase(); if(!code) return;
-      const roomSnap = await getDoc(doc(db, "rooms", code));
-      if(roomSnap.exists()) {
-        await setDoc(doc(db, "users", currentUser.uid, "joinedRooms", code), { name: roomSnap.data().name, joinedAt: Date.now() }); showTeamRoom(code);
-        document.getElementById('invite-code-input').value = '';
-      } else alert("잘못된 초대 코드입니다.");
-    });
-    
-    document.getElementById('btn-leave-room').addEventListener('click', () => {
-      if(activeRoomCode) deleteDoc(doc(db, "rooms", activeRoomCode, "users", currentUser.uid)); 
-      activeRoomCode = null; document.getElementById('team-room-view').style.display = 'none'; document.getElementById('team-lobby').style.display = 'flex'; cleanupRoomListeners(); loadMyJoinedRooms();
-    });
-
-    document.getElementById('btn-edit-room').addEventListener('click', async () => {
-      const newName = prompt("변경할 방 이름을 입력하세요:", currentRoomName);
-      if(newName && newName.trim() && newName !== currentRoomName) { await updateDoc(doc(db, "rooms", activeRoomCode), { name: newName.trim() }); await updateDoc(doc(db, "users", currentUser.uid, "joinedRooms", activeRoomCode), { name: newName.trim() }); }
-    });
-
-    document.getElementById('btn-change-theme').addEventListener('click', async () => {
-      currentThemeIndex = (currentThemeIndex + 1) % themes.length; await updateDoc(doc(db, "rooms", activeRoomCode), { theme: themes[currentThemeIndex] });
-    });
-
-    // 방 내부 입장 (코어 분리 로직 적용)
-    function showTeamRoom(code) {
-      activeRoomCode = code;
-      document.getElementById('team-lobby').style.display = 'none';
-      document.getElementById('team-room-view').style.display = 'flex';
-      
-      // [치명적 버그 수정] 방 입장 시 화면에 남아있던 이전 방 메모장(DOM) 강제 초기화!
-      document.getElementById('team-memo-input').value = '';
-      currentMemoBoardId = 'main';
-
-      unsubRoomData = onSnapshot(doc(db, "rooms", code), (docSnap) => {
-        if(docSnap.exists()) {
-          const data = docSnap.data();
-          currentRoomName = data.name || "방 이름 없음";
-          document.getElementById('current-room-code-display').textContent = `${currentRoomName} (${code})`;
-          
-          const canvas = document.getElementById('canvas-area');
-          canvas.className = `pixel-canvas ${data.theme || 'theme-blueprint'}`;
-          currentThemeIndex = themes.indexOf(data.theme || 'theme-blueprint');
-
-          // 동적 구역 및 상태 버튼 렌더링
-          currentRoomZones = data.zones || [];
-          renderZonesAndStatus();
-
-          // 메모보드 채널 렌더링
-          roomMemoBoards = data.memoBoards || [{ id: 'main', name: '메인 보드' }];
-          renderMemoBoardSelector();
-        }
-      });
-
-      const canvasArea = document.getElementById('canvas-area');
-      Array.from(canvasArea.children).forEach(child => { if(child.classList.contains('avatar')) child.remove(); });
-      
-      unsubRoomUsers = onSnapshot(collection(db, "rooms", code, "users"), (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const uData = change.doc.data(); const uid = change.doc.id;
-          if (change.type === "added") createAvatar(uid, uData.name, uData.status, uData.message);
-          if (change.type === "modified") updateAvatar(uid, uData.status, uData.message);
-          if (change.type === "removed") { const av = document.getElementById(`avatar-${uid}`); if(av) av.remove(); }
-        });
-      });
-
-      unsubTTask = onSnapshot(query(collection(db, "rooms", code, "tasks"), orderBy("createdAt", "asc")), s => {
-        const list = document.getElementById('team-task-list'); list.innerHTML = '';
-        s.forEach(d => {
-          const li = document.createElement('li'); li.className = `list-item ${d.data().completed ? 'completed' : ''}`;
-          li.innerHTML = `<div class="list-item-content"><input type="checkbox" ${d.data().completed?'checked':''}><span>${d.data().text}</span></div><button class="btn-delete">삭제</button>`;
-          li.querySelector('input').onclick = () => updateDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id), { completed: !d.data().completed });
-          li.querySelector('.btn-delete').onclick = () => deleteDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id)); list.appendChild(li);
-        });
-      });
-      document.getElementById('btn-add-team-task').onclick = () => {
-        const inp = document.getElementById('team-task-input');
-        if(inp.value.trim()) { addDoc(collection(db, "rooms", code, "tasks"), { text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; }
-      };
-    }
-
-    // 💡 동적 구역 렌더링 함수
-    function renderZonesAndStatus() {
-      const canvasArea = document.getElementById('canvas-area');
-      const statusContainer = document.getElementById('dynamic-status-controls');
-      
-      // 기존 구역 및 버튼 초기화 (아바타는 건드리지 않음)
-      Array.from(canvasArea.children).forEach(c => { if(c.classList.contains('zone')) c.remove(); });
-      statusContainer.innerHTML = `<span style="color: #94a3b8; font-size: 13px; margin-right: 10px;">상태 변경:</span>`;
-
-      currentRoomZones.forEach((z, index) => {
-        // UI를 위한 고정 슬롯 할당 (5개 초과 시 겹침 방지)
-        const slot = SLOT_BOUNDS[index % SLOT_BOUNDS.length]; 
-        
-        // 캔버스 구역 그리기
-        const zDiv = document.createElement('div');
-        zDiv.className = 'zone';
-        zDiv.innerHTML = `${z.emoji} ${z.name}`;
-        zDiv.style.top = `${slot.top}%`; zDiv.style.left = `${slot.left}%`; zDiv.style.width = `${slot.width}%`; zDiv.style.height = `${slot.height}%`;
-        if(currentThemeIndex === 1) { zDiv.style.border = '2px solid #22c55e'; zDiv.style.color = '#4ade80'; zDiv.style.background = 'rgba(22, 101, 52, 0.2)'; }
-        else if (currentThemeIndex === 2) { zDiv.style.border = '2px dashed #8b5cf6'; zDiv.style.color = '#c4b5fd'; zDiv.style.background = 'rgba(76, 29, 149, 0.3)'; }
-        else { zDiv.style.border = '2px dashed #475569'; zDiv.style.color = '#64748b'; zDiv.style.background = 'rgba(30, 41, 59, 0.4)'; }
-        canvasArea.appendChild(zDiv);
-
-        // 상태 변경 버튼 그리기
-        const btn = document.createElement('button');
-        btn.className = 'btn-status';
-        btn.dataset.status = z.id;
-        btn.innerHTML = `${z.emoji} ${z.name}`;
-        btn.onclick = () => {
-          document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          updateMyStatus(z.id, `${z.name}에 있음`);
-        };
-        statusContainer.appendChild(btn);
-      });
-    }
-
-    function updateMyStatus(statusType, msg) {
-      setDoc(doc(db, "rooms", activeRoomCode, "users", currentUser.uid), { name: currentUser.displayName, status: statusType, message: msg, updatedAt: Date.now() }, { merge: true });
-    }
-
-    // 아바타 좌표 계산 (동적 구역 슬롯 기반)
-    function getAvatarCoordinates(statusId, uid) {
-      const idx = currentRoomZones.findIndex(z => z.id === statusId);
-      const slot = idx !== -1 ? SLOT_BOUNDS[idx % SLOT_BOUNDS.length] : SLOT_BOUNDS[0];
-      const offsetTop = (uid.charCodeAt(0) % (slot.height * 2)) - slot.height; 
-      const offsetLeft = (uid.charCodeAt(1) % (slot.width * 2)) - slot.width;
-      return { top: `calc(${slot.top + slot.height/2}% + ${offsetTop}px)`, left: `calc(${slot.left + slot.width/2}% + ${offsetLeft}px)` };
-    }
-
-    function createAvatar(uid, name, status, message) {
-      const coord = getAvatarCoordinates(status, uid);
-      const avatarDiv = document.createElement('div'); avatarDiv.id = `avatar-${uid}`; avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
-      avatarDiv.addEventListener('mouseenter', () => avatarDiv.classList.add('active')); avatarDiv.addEventListener('mouseleave', () => avatarDiv.classList.remove('active'));
-      avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
-      
-      const bubble = document.createElement('div'); bubble.className = 'avatar-bubble'; bubble.textContent = message;
-      const body = document.createElement('div'); body.className = 'avatar-body'; body.innerHTML = getRobotSVG(status, uid); 
-      const nameTag = document.createElement('div'); nameTag.className = 'avatar-name'; nameTag.textContent = name;
-      
-      avatarDiv.appendChild(bubble); avatarDiv.appendChild(body); avatarDiv.appendChild(nameTag);
-      document.getElementById('canvas-area').appendChild(avatarDiv);
-    }
-
-    function updateAvatar(uid, status, message) {
-      const avatarDiv = document.getElementById(`avatar-${uid}`); if(!avatarDiv) return;
-      const coord = getAvatarCoordinates(status, uid);
-      avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
-      avatarDiv.querySelector('.avatar-bubble').textContent = message; avatarDiv.querySelector('.avatar-body').innerHTML = getRobotSVG(status, uid);
-    }
-
-    /* === 💡 구역(Zone) 편집 모달 로직 === */
-    document.getElementById('btn-edit-zones').addEventListener('click', () => {
-      document.getElementById('zone-modal').style.display = 'flex';
-      renderZoneEditList();
-    });
-    document.getElementById('btn-close-zone-modal').addEventListener('click', () => { document.getElementById('zone-modal').style.display = 'none'; });
-    
-    // 모달 내부 구역 리스트 그리기
-    let tempZones = [];
-    function renderZoneEditList() {
-      tempZones = JSON.parse(JSON.stringify(currentRoomZones));
-      const listDiv = document.getElementById('zone-edit-list'); listDiv.innerHTML = '';
-      tempZones.forEach((z, i) => {
-        const item = document.createElement('div'); item.className = 'zone-edit-item';
-        item.innerHTML = `<input type="text" value="${z.emoji}" style="width:40px; text-align:center;" id="ze-${i}-emoji"> <input type="text" value="${z.name}" style="flex:1;" id="ze-${i}-name"> <button class="btn-delete" onclick="removeTempZone(${i})">삭제</button>`;
-        listDiv.appendChild(item);
-      });
-    }
-    
-    window.removeTempZone = function(idx) {
-      if(tempZones.length <= 1) { alert("최소 1개의 구역은 남겨두어야 합니다."); return; }
-      tempZones.splice(idx, 1); renderZoneEditList();
-    }
-    
-    document.getElementById('btn-add-new-zone').addEventListener('click', () => {
-      if(tempZones.length >= 5) { alert("구역은 최대 5개까지만 추가할 수 있습니다."); return; }
-      tempZones.push({ id: `zone-${Date.now()}`, name: '새로운 구역', emoji: '✨' }); renderZoneEditList();
-    });
-
-    document.getElementById('btn-save-zones').addEventListener('click', async () => {
-      // 인풋 값 읽어와서 저장
-      tempZones.forEach((z, i) => {
-        z.emoji = document.getElementById(`ze-${i}-emoji`).value || '✨';
-        z.name = document.getElementById(`ze-${i}-name`).value || '이름 없음';
-      });
-      await updateDoc(doc(db, "rooms", activeRoomCode), { zones: tempZones });
-      document.getElementById('zone-modal').style.display = 'none';
-    });
-
-    /* === 📢 팀 다중 메모보드 로직 === */
-    function renderMemoBoardSelector() {
-      const selector = document.getElementById('memo-board-selector'); selector.innerHTML = '';
-      let hasCurrent = false;
-      roomMemoBoards.forEach(board => {
-        const opt = document.createElement('option'); opt.value = board.id; opt.textContent = board.name; selector.appendChild(opt);
-        if(board.id === currentMemoBoardId) hasCurrent = true;
-      });
-      if(!hasCurrent && roomMemoBoards.length > 0) currentMemoBoardId = roomMemoBoards[0].id;
-      selector.value = currentMemoBoardId;
-      connectMemoBoardListener();
-    }
-
-    document.getElementById('memo-board-selector').addEventListener('change', (e) => {
-      currentMemoBoardId = e.target.value;
-      document.getElementById('team-memo-input').value = ''; // 탭 전환 시 화면 깨끗하게!
-      connectMemoBoardListener();
-    });
-
-    document.getElementById('btn-add-memo-board').addEventListener('click', async () => {
-      const name = prompt("새로운 채널(메모보드) 이름을 입력하세요.\n(예: 주간 회의록, 기획 아이디어)"); if(!name || !name.trim()) return;
-      const newBoardId = `memo-${Date.now()}`;
-      const newBoards = [...roomMemoBoards, { id: newBoardId, name: name.trim() }];
-      await updateDoc(doc(db, "rooms", activeRoomCode), { memoBoards: newBoards });
-      currentMemoBoardId = newBoardId; // 방금 만든 탭으로 자동 이동
-    });
-
-    function connectMemoBoardListener() {
-      if(unsubTMemo) unsubTMemo();
-      const tMemo = document.getElementById('team-memo-input');
-      // DB 경로: 해당 방(code) 내부의 memos 컬렉션 아래에 개별 문서로 저장되어 완벽히 독립됨!
-      unsubTMemo = onSnapshot(doc(db, "rooms", activeRoomCode, "memos", currentMemoBoardId), s => {
-        if (s.exists() && document.activeElement !== tMemo) tMemo.value = s.data().content || '';
-        else if (!s.exists()) tMemo.value = '';
-      });
-      tMemo.oninput = () => { setTimeout(() => setDoc(doc(db, "rooms", activeRoomCode, "memos", currentMemoBoardId), { content: tMemo.value }, { merge: true }), 800); };
-    }
-
-  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
