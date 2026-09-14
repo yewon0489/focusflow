@@ -179,7 +179,7 @@ function loadMyJoinedRooms() {
 document.getElementById('btn-create-room').addEventListener('click', async () => {
   const roomName = prompt("생성할 워크스페이스의 이름을 입력하세요."); if(!roomName || !roomName.trim()) return;
   const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-  const defaultZones = [ { id: 'zone-1', name: '업무/기획 존', emoji: '💻' }, { id: 'zone-2', name: '회의실', emoji: '🗣️' }, { id: 'zone-3', name: '휴게실', emoji: '☕' } ];
+  const defaultZones = [ { id: 'zone-1', name: '업무/기획 존' }, { id: 'zone-2', name: '회의실' }, { id: 'zone-3', name: '휴게실' } ];
   const defaultMemoBoards = [{ id: 'main', name: '메인 보드' }];
   await setDoc(doc(db, "rooms", newCode), { createdAt: Date.now(), name: roomName.trim(), theme: 'theme-blueprint', createdBy: currentUser.uid, zones: defaultZones, memoBoards: defaultMemoBoards });
   await setDoc(doc(db, "users", currentUser.uid, "joinedRooms", newCode), { name: roomName.trim(), joinedAt: Date.now() });
@@ -258,26 +258,25 @@ function renderZonesAndStatus() {
   const canvasArea = document.getElementById('canvas-area');
   const statusContainer = document.getElementById('dynamic-status-controls');
   Array.from(canvasArea.children).forEach(c => { if(c.classList.contains('zone')) c.remove(); });
-  statusContainer.innerHTML = `<span style="color: #94a3b8; font-size: 13px; margin-right: 10px;">상태 변경:</span>`;
+  statusContainer.innerHTML = `<span style="color: #94a3b8; font-size: 13px; margin-right: 10px;">구역 이동:</span>`;
 
   currentRoomZones.forEach((z, index) => {
     const slot = SLOT_BOUNDS[index % SLOT_BOUNDS.length]; 
-    const zDiv = document.createElement('div'); zDiv.className = 'zone'; zDiv.innerHTML = `${z.emoji} ${z.name}`;
+    const zDiv = document.createElement('div'); zDiv.className = 'zone'; zDiv.innerHTML = `${z.name}`;
     zDiv.style.top = `${slot.top}%`; zDiv.style.left = `${slot.left}%`; zDiv.style.width = `${slot.width}%`; zDiv.style.height = `${slot.height}%`;
     if(currentThemeIndex === 1) { zDiv.style.border = '2px solid #22c55e'; zDiv.style.color = '#4ade80'; zDiv.style.background = 'rgba(22, 101, 52, 0.2)'; }
     else if (currentThemeIndex === 2) { zDiv.style.border = '2px dashed #8b5cf6'; zDiv.style.color = '#c4b5fd'; zDiv.style.background = 'rgba(76, 29, 149, 0.3)'; }
     else { zDiv.style.border = '2px dashed #475569'; zDiv.style.color = '#64748b'; zDiv.style.background = 'rgba(30, 41, 59, 0.4)'; }
     canvasArea.appendChild(zDiv);
 
-    const btn = document.createElement('button'); btn.className = 'btn-status'; btn.dataset.status = z.id; btn.innerHTML = `${z.emoji} ${z.name}`;
+    // 💡 팝업창 없이 클릭 즉시 해당 구역으로 이동 (메시지는 유지)
+    const btn = document.createElement('button'); btn.className = 'btn-status'; btn.dataset.status = z.id; btn.innerHTML = `${z.name}`;
     btn.onclick = () => { 
-      // 💡 상태 변경 시 커스텀 말풍선 메시지 입력 추가
-      const customMsg = prompt(`[${z.name}] 구역으로 이동합니다.\n말풍선에 띄울 상태 메시지를 입력하세요:`, '열일중 🔥');
-      if (customMsg !== null) {
-        document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); 
-        btn.classList.add('active'); 
-        updateMyStatus(z.id, customMsg); 
-      }
+      document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); 
+      btn.classList.add('active'); 
+      const currentInput = document.querySelector('.status-input-inline');
+      const msg = currentInput ? currentInput.value : '열일중 🔥';
+      updateMyStatus(z.id, msg); 
     };
     statusContainer.appendChild(btn);
   });
@@ -298,10 +297,30 @@ function getAvatarCoordinates(statusId, uid) {
 function createAvatar(uid, name, status, message) {
   const coord = getAvatarCoordinates(status, uid);
   const avatarDiv = document.createElement('div'); avatarDiv.id = `avatar-${uid}`; avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
-  avatarDiv.addEventListener('mouseenter', () => avatarDiv.classList.add('active')); avatarDiv.addEventListener('mouseleave', () => avatarDiv.classList.remove('active'));
   avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
   
-  const bubble = document.createElement('div'); bubble.className = 'avatar-bubble'; bubble.textContent = message;
+  const isMe = (uid === currentUser.uid);
+  const bubble = document.createElement('div'); bubble.className = 'avatar-bubble'; 
+  
+  if (isMe) {
+    // 💡 내 캐릭터에 마우스를 올리면 인라인으로 상태 입력창 생성 (엔터 시 저장)
+    bubble.innerHTML = `<input type="text" class="status-input-inline" value="${message || '열일중 🔥'}" placeholder="상태 메시지 입력" />`;
+    const inputEl = bubble.querySelector('input');
+    inputEl.addEventListener('click', (e) => e.stopPropagation());
+    inputEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const newMsg = inputEl.value.trim() || '열일중 🔥';
+        updateMyStatus(status, newMsg);
+        inputEl.blur();
+      }
+    });
+  } else {
+    bubble.textContent = message || '열일중 🔥';
+  }
+
+  avatarDiv.addEventListener('mouseenter', () => avatarDiv.classList.add('active')); 
+  avatarDiv.addEventListener('mouseleave', () => avatarDiv.classList.remove('active'));
+
   const body = document.createElement('div'); body.className = 'avatar-body'; body.innerHTML = getRobotSVG(status, uid); 
   const nameTag = document.createElement('div'); nameTag.className = 'avatar-name'; nameTag.textContent = name;
   
@@ -313,10 +332,15 @@ function updateAvatar(uid, status, message) {
   const avatarDiv = document.getElementById(`avatar-${uid}`); if(!avatarDiv) return;
   const coord = getAvatarCoordinates(status, uid);
   avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
-  avatarDiv.querySelector('.avatar-bubble').textContent = message; avatarDiv.querySelector('.avatar-body').innerHTML = getRobotSVG(status, uid);
+  
+  const isMe = (uid === currentUser.uid);
+  if (!isMe) {
+    avatarDiv.querySelector('.avatar-bubble').textContent = message || '열일중 🔥';
+  }
+  avatarDiv.querySelector('.avatar-body').innerHTML = getRobotSVG(status, uid);
 }
 
-/* === 💡 구역(Zone) 편집 모달 로직 === */
+/* === 💡 구역(Zone) 편집 모달 로직 (1개 입력칸으로 통일) === */
 let tempZones = [];
 document.getElementById('btn-edit-zones').addEventListener('click', () => { 
   tempZones = JSON.parse(JSON.stringify(currentRoomZones));
@@ -330,16 +354,10 @@ function renderZoneEditList() {
   tempZones.forEach((z, i) => {
     const item = document.createElement('div'); item.className = 'zone-edit-item';
     
-    // 💡 Placeholder 추가 완료
-    const inputEmoji = document.createElement('input'); 
-    inputEmoji.type = 'text'; inputEmoji.value = z.emoji; inputEmoji.id = `ze-${i}-emoji`; 
-    inputEmoji.style.width = '40px'; inputEmoji.style.textAlign = 'center';
-    inputEmoji.placeholder = "이모지";
-
     const inputName = document.createElement('input'); 
     inputName.type = 'text'; inputName.value = z.name; inputName.id = `ze-${i}-name`; 
     inputName.style.flex = '1';
-    inputName.placeholder = "구역 이름";
+    inputName.placeholder = "구역 이름을 입력하세요";
     
     const btnDelete = document.createElement('button'); btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
     btnDelete.addEventListener('click', () => {
@@ -347,19 +365,18 @@ function renderZoneEditList() {
       tempZones.splice(i, 1); renderZoneEditList();
     });
 
-    item.appendChild(inputEmoji); item.appendChild(inputName); item.appendChild(btnDelete); listDiv.appendChild(item);
+    item.appendChild(inputName); item.appendChild(btnDelete); listDiv.appendChild(item);
   });
 }
 
 document.getElementById('btn-add-new-zone').addEventListener('click', () => {
   if(tempZones.length >= 5) { alert("구역은 최대 5개까지만 추가할 수 있습니다."); return; }
-  tempZones.push({ id: `zone-${Date.now()}`, name: '', emoji: '✨' }); renderZoneEditList();
+  tempZones.push({ id: `zone-${Date.now()}`, name: '새로운 구역' }); renderZoneEditList();
 });
 
 document.getElementById('btn-save-zones').addEventListener('click', async () => {
   tempZones.forEach((z, i) => { 
-    z.emoji = document.getElementById(`ze-${i}-emoji`).value || '✨'; 
-    z.name = document.getElementById(`ze-${i}-name`).value || '이름 없음'; 
+    z.name = document.getElementById(`ze-${i}-name`).value.trim() || '이름 없음'; 
   });
   await updateDoc(doc(db, "rooms", activeRoomCode), { zones: tempZones });
   document.getElementById('zone-modal').style.display = 'none';
