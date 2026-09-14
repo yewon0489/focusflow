@@ -87,34 +87,62 @@ function switchMode(mode) {
   }
 }
 
-/* === 💡 전역 뽀모도로 타이머 엔진 === */
+/* === 💡 사용자 중심 뽀모도로 타이머 엔진 업데이트 === */
 window.pomoInterval = null;
-window.startPomodoro = function(taskText) {
+window.currentPomoTaskId = null; // 현재 타이머가 돌고 있는 할 일의 ID
+
+window.startPomodoro = function(taskId, taskText) {
   if (window.pomoInterval) clearInterval(window.pomoInterval);
-  let pomoTime = 25 * 60; // 25분 (초 단위)
-  const display = document.getElementById('pomodoro-display');
   
-  display.style.display = 'block';
+  // 1. 몇 분 할지 사용자에게 묻기 (기본값 25분)
+  const userTime = prompt(`[${taskText}] 작업을 몇 분 동안 집중하시겠습니까?\n(숫자만 입력해주세요)`, "25");
+  if (userTime === null || isNaN(userTime) || userTime <= 0) return; // 취소하거나 이상한 값 넣으면 무시
+
+  let pomoTime = parseInt(userTime) * 60; // 초 단위로 변환
+  window.currentPomoTaskId = taskId; // 어떤 할일인지 기억함
+
+  const display = document.getElementById('pomodoro-display');
+  display.style.display = 'flex';
   display.style.background = '#4ade80';
   display.style.color = '#0f1115';
+  
+  // 2. 타이머 텍스트와 정지 버튼 렌더링
+  display.innerHTML = `
+    <span id="pomo-text-timer">⏳ ${String(Math.floor(pomoTime / 60)).padStart(2, '0')}:${String(pomoTime % 60).padStart(2, '0')} - ${taskText}</span>
+    <button onclick="window.stopPomodoro()" style="background:transparent; border:none; cursor:pointer; font-size:14px; margin-left:12px; transition:0.2s;" title="타이머 강제 종료">⏹️</button>
+  `;
+
+  const timerSpan = document.getElementById('pomo-text-timer');
   
   window.pomoInterval = setInterval(() => {
     pomoTime--;
     const m = String(Math.floor(pomoTime / 60)).padStart(2, '0');
     const s = String(pomoTime % 60).padStart(2, '0');
-    display.textContent = `⏳ ${m}:${s} - ${taskText}`;
+    if (timerSpan) timerSpan.textContent = `⏳ ${m}:${s} - ${taskText}`;
     
     if (pomoTime <= 0) {
-      clearInterval(window.pomoInterval);
-      display.style.background = '#ef4444';
-      display.style.color = '#f8fafc';
-      display.textContent = `🎉 완료! 5분 휴식하세요.`;
-      setTimeout(() => { display.style.display = 'none'; }, 10000);
+      window.stopPomodoro(true);
     }
   }, 1000);
 };
 
-/* === 개인 데이터 처리 (신호등 & 뽀모도로 적용) === */
+// 3. 타이머 종료 로직 (isComplete가 true면 자연종료, false면 유저가 끈 것)
+window.stopPomodoro = function(isComplete = false) {
+  if (window.pomoInterval) clearInterval(window.pomoInterval);
+  window.currentPomoTaskId = null; // 기억 리셋
+  
+  const display = document.getElementById('pomodoro-display');
+  if (isComplete) {
+    display.style.background = '#ef4444';
+    display.style.color = '#f8fafc';
+    display.innerHTML = `🎉 타이머 종료! 수고하셨습니다.`;
+    setTimeout(() => { display.style.display = 'none'; }, 5000); // 5초 뒤 숨김
+  } else {
+    display.style.display = 'none'; // 강제 종료 시 즉시 숨김
+  }
+};
+
+/* === 개인 데이터 처리 (유령 타이머 방지 포함) === */
 let unsubGoals, unsubPTask;
 function loadPersonalData() {
   const userRef = doc(db, "users", currentUser.uid);
@@ -130,23 +158,24 @@ function loadPersonalData() {
       const li = document.createElement('li'); 
       li.className = `list-item ${data.completed ? 'completed' : ''}`;
       
-      // 💡 마감 시간 신호등 계산 로직
       let timeBadgeHtml = '';
       if (data.deadline && !data.completed) {
         const now = new Date();
         const [dHour, dMin] = data.deadline.split(':').map(Number);
         const deadlineDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), dHour, dMin);
-        const diffMs = deadlineDate - now; // 남은 시간(밀리초)
+        const diffMs = deadlineDate - now; 
         
         let badgeClass = 'task-normal';
-        if (diffMs < 0) badgeClass = 'task-critical'; // 마감시간 지남 (빨강)
-        else if (diffMs <= 60 * 60 * 1000) badgeClass = 'task-urgent'; // 1시간 이내 (주황)
+        if (diffMs < 0) badgeClass = 'task-critical'; 
+        else if (diffMs <= 60 * 60 * 1000) badgeClass = 'task-urgent'; 
         
         timeBadgeHtml = `<span class="task-time-badge ${badgeClass}">${data.deadline}까지</span>`;
       } else if (data.deadline && data.completed) {
         timeBadgeHtml = `<span class="task-time-badge task-normal" style="opacity:0.4;">${data.deadline} (완료)</span>`;
       }
 
+      // 💡 시작 버튼에 아이디(d.id) 전달 (특수문자 오류 방지를 위해 replace 처리)
+      const safeTaskText = data.text.replace(/'/g, "\\'");
       li.innerHTML = `
         <div class="list-item-content">
           <input type="checkbox" ${data.completed ? 'checked' : ''}>
@@ -154,18 +183,25 @@ function loadPersonalData() {
           ${timeBadgeHtml}
         </div>
         <div style="display:flex; align-items:center;">
-          ${!data.completed ? `<button class="btn-play-pomodoro" onclick="window.startPomodoro('${data.text}')" title="이 작업 25분 집중하기">▶</button>` : ''}
+          ${!data.completed ? `<button class="btn-play-pomodoro" onclick="window.startPomodoro('${d.id}', '${safeTaskText}')" title="이 작업 타이머 시작">▶</button>` : ''}
           <button class="btn-delete" style="padding:0;">삭제</button>
         </div>
       `;
       
       li.querySelector('input').onclick = () => updateDoc(doc(collection(userRef, "tasks"), d.id), { completed: !data.completed });
-      li.querySelector('.btn-delete').onclick = () => deleteDoc(doc(collection(userRef, "tasks"), d.id));
+      
+      // 💡 핵심: 할 일을 삭제할 때, 그 할 일의 타이머가 돌고 있다면 강제로 멈춥니다!
+      li.querySelector('.btn-delete').onclick = () => {
+        if (window.currentPomoTaskId === d.id) {
+          window.stopPomodoro(); // 유령 타이머 사살
+        }
+        deleteDoc(doc(collection(userRef, "tasks"), d.id));
+      };
+      
       list.appendChild(li);
     });
   });
   
-  // 새 개인 할 일 등록 (시간 포함)
   document.getElementById('btn-add-personal-task').onclick = () => {
     const inp = document.getElementById('personal-task-input');
     const timeInp = document.getElementById('personal-task-time');
@@ -173,7 +209,7 @@ function loadPersonalData() {
       addDoc(collection(userRef, "tasks"), { 
         text: inp.value.trim(), 
         completed: false, 
-        deadline: timeInp.value || null, // 시간 저장
+        deadline: timeInp.value || null,
         createdAt: Date.now() 
       }); 
       inp.value = ''; timeInp.value = '';
