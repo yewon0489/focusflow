@@ -270,10 +270,14 @@ function renderZonesAndStatus() {
     canvasArea.appendChild(zDiv);
 
     const btn = document.createElement('button'); btn.className = 'btn-status'; btn.dataset.status = z.id; btn.innerHTML = `${z.emoji} ${z.name}`;
-    btn.onclick = () => { document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateMyStatus(z.id, `${z.name}에 있음`); };
-    statusContainer.appendChild(btn);
-  });
-}
+btn.onclick = () => { 
+      const customMsg = prompt(`[${z.name}] 구역으로 이동합니다.\n말풍선에 띄울 상태 메시지를 입력하세요:`, '열일중 🔥');
+      if (customMsg !== null) {
+        document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); 
+        btn.classList.add('active'); 
+        updateMyStatus(z.id, customMsg); 
+      }
+    };
 
 function updateMyStatus(statusType, msg) {
   setDoc(doc(db, "rooms", activeRoomCode, "users", currentUser.uid), { name: currentUser.displayName, status: statusType, message: msg, updatedAt: Date.now() }, { merge: true });
@@ -329,13 +333,15 @@ function renderZoneEditList() {
   tempZones.forEach((z, i) => {
     const item = document.createElement('div'); item.className = 'zone-edit-item';
     
-    const inputEmoji = document.createElement('input'); 
+const inputEmoji = document.createElement('input'); 
     inputEmoji.type = 'text'; inputEmoji.value = z.emoji; inputEmoji.id = `ze-${i}-emoji`; 
     inputEmoji.style.width = '40px'; inputEmoji.style.textAlign = 'center';
-    
+    inputEmoji.placeholder = "이모지"; // 추가된 부분
+
     const inputName = document.createElement('input'); 
     inputName.type = 'text'; inputName.value = z.name; inputName.id = `ze-${i}-name`; 
     inputName.style.flex = '1';
+    inputName.placeholder = "구역 이름"; // 추가된 부분
     
     const btnDelete = document.createElement('button'); 
     btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
