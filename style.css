@@ -112,9 +112,24 @@ textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; p
 .avatar.active-user .avatar-name { border-color: #38bdf8; color: #38bdf8; font-weight: bold; }
 
 @media (max-width: 860px) {
-  body { padding: 4px; } #main-dashboard { padding: 8px; gap: 12px; } .grid-layout { grid-template-columns: 1fr; gap: 14px; } .goals-grid { grid-template-columns: 1fr; }
-  .header-banner { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; } .user-profile { justify-content: center; }
-  .pixel-canvas { height: 260px; } .zone { font-size: 11px; }
+  body { padding: 4px; } 
+  #main-dashboard { padding: 8px; gap: 12px; } 
+  /* 카드들을 1열로 세로 정렬 */
+  .grid-layout, #team-room-view .grid-layout { grid-template-columns: 1fr !important; gap: 14px; } 
+  .goals-grid { grid-template-columns: 1fr; }
+  .header-banner { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; } 
+  .user-profile { justify-content: center; }
+  .pixel-canvas { height: 260px; } 
+  .zone { font-size: 11px; }
+
+  /* 💡 마일스톤 모바일 최적화 */
+  .milestone-summary { gap: 8px; flex-direction: column; align-items: flex-start; }
+  .milestone-input-group { flex-direction: column; }
+  .milestone-input-group input { width: 100%; }
+  
+  /* 스마트폰에서 표가 찌그러지지 않고 가로로 스와이프 되도록 설정 */
+  .milestone-table-container { overflow-x: auto; padding-bottom: 5px; }
+  .milestone-table { min-width: 500px; }
 }
 
 /* === 📝 포스트잇 위젯 스타일 === */
