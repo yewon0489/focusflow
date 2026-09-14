@@ -87,7 +87,34 @@ function switchMode(mode) {
   }
 }
 
-/* === 개인 데이터 처리 === */
+/* === 💡 전역 뽀모도로 타이머 엔진 === */
+window.pomoInterval = null;
+window.startPomodoro = function(taskText) {
+  if (window.pomoInterval) clearInterval(window.pomoInterval);
+  let pomoTime = 25 * 60; // 25분 (초 단위)
+  const display = document.getElementById('pomodoro-display');
+  
+  display.style.display = 'block';
+  display.style.background = '#4ade80';
+  display.style.color = '#0f1115';
+  
+  window.pomoInterval = setInterval(() => {
+    pomoTime--;
+    const m = String(Math.floor(pomoTime / 60)).padStart(2, '0');
+    const s = String(pomoTime % 60).padStart(2, '0');
+    display.textContent = `⏳ ${m}:${s} - ${taskText}`;
+    
+    if (pomoTime <= 0) {
+      clearInterval(window.pomoInterval);
+      display.style.background = '#ef4444';
+      display.style.color = '#f8fafc';
+      display.textContent = `🎉 완료! 5분 휴식하세요.`;
+      setTimeout(() => { display.style.display = 'none'; }, 10000);
+    }
+  }, 1000);
+};
+
+/* === 개인 데이터 처리 (신호등 & 뽀모도로 적용) === */
 let unsubGoals, unsubPTask;
 function loadPersonalData() {
   const userRef = doc(db, "users", currentUser.uid);
@@ -99,16 +126,58 @@ function loadPersonalData() {
   unsubPTask = onSnapshot(query(collection(userRef, "tasks"), orderBy("createdAt", "asc")), s => {
     const list = document.getElementById('personal-task-list'); list.innerHTML = '';
     s.forEach(d => {
-      const li = document.createElement('li'); li.className = `list-item ${d.data().completed ? 'completed' : ''}`;
-      li.innerHTML = `<div class="list-item-content"><input type="checkbox" ${d.data().completed?'checked':''}><span>${d.data().text}</span></div><button class="btn-delete">삭제</button>`;
-      li.querySelector('input').onclick = () => updateDoc(doc(collection(userRef, "tasks"), d.id), { completed: !d.data().completed });
+      const data = d.data();
+      const li = document.createElement('li'); 
+      li.className = `list-item ${data.completed ? 'completed' : ''}`;
+      
+      // 💡 마감 시간 신호등 계산 로직
+      let timeBadgeHtml = '';
+      if (data.deadline && !data.completed) {
+        const now = new Date();
+        const [dHour, dMin] = data.deadline.split(':').map(Number);
+        const deadlineDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), dHour, dMin);
+        const diffMs = deadlineDate - now; // 남은 시간(밀리초)
+        
+        let badgeClass = 'task-normal';
+        if (diffMs < 0) badgeClass = 'task-critical'; // 마감시간 지남 (빨강)
+        else if (diffMs <= 60 * 60 * 1000) badgeClass = 'task-urgent'; // 1시간 이내 (주황)
+        
+        timeBadgeHtml = `<span class="task-time-badge ${badgeClass}">${data.deadline}까지</span>`;
+      } else if (data.deadline && data.completed) {
+        timeBadgeHtml = `<span class="task-time-badge task-normal" style="opacity:0.4;">${data.deadline} (완료)</span>`;
+      }
+
+      li.innerHTML = `
+        <div class="list-item-content">
+          <input type="checkbox" ${data.completed ? 'checked' : ''}>
+          <span style="flex:1;">${data.text}</span>
+          ${timeBadgeHtml}
+        </div>
+        <div style="display:flex; align-items:center;">
+          ${!data.completed ? `<button class="btn-play-pomodoro" onclick="window.startPomodoro('${data.text}')" title="이 작업 25분 집중하기">▶</button>` : ''}
+          <button class="btn-delete" style="padding:0;">삭제</button>
+        </div>
+      `;
+      
+      li.querySelector('input').onclick = () => updateDoc(doc(collection(userRef, "tasks"), d.id), { completed: !data.completed });
       li.querySelector('.btn-delete').onclick = () => deleteDoc(doc(collection(userRef, "tasks"), d.id));
       list.appendChild(li);
     });
   });
+  
+  // 새 개인 할 일 등록 (시간 포함)
   document.getElementById('btn-add-personal-task').onclick = () => {
     const inp = document.getElementById('personal-task-input');
-    if(inp.value.trim()) { addDoc(collection(userRef, "tasks"), { text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; }
+    const timeInp = document.getElementById('personal-task-time');
+    if(inp.value.trim()) { 
+      addDoc(collection(userRef, "tasks"), { 
+        text: inp.value.trim(), 
+        completed: false, 
+        deadline: timeInp.value || null, // 시간 저장
+        createdAt: Date.now() 
+      }); 
+      inp.value = ''; timeInp.value = '';
+    }
   };
 
   if(unsubGoals) unsubGoals();
@@ -133,7 +202,6 @@ function loadPersonalData() {
     if (currentModalType) renderModalTable(currentModalType);
   });
 
-  // 💡 포스트잇 데이터 실시간 저장/불러오기
   const postitContent = document.getElementById('postit-content');
   if (postitContent) {
     onSnapshot(doc(userRef, "data", "postit"), s => { 
@@ -141,7 +209,7 @@ function loadPersonalData() {
     });
     postitContent.oninput = () => { setTimeout(() => setDoc(doc(userRef, "data", "postit"), { text: postitContent.value }, { merge: true }), 800); };
   }
-} // <--- 여기가 loadPersonalData 함수의 진짜 끝입니다!
+}
 
 ['daily', 'weekly', 'monthly', 'yearly'].forEach(type => {
   const addGoal = () => { const inp = document.getElementById(`input-${type}`); if(inp.value.trim()) { addDoc(collection(db, "users", currentUser.uid, "goals"), { type: type, text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; } };
@@ -247,7 +315,6 @@ function showTeamRoom(code) {
     });
   });
 
-  // 💡 마일스톤 대시보드 로직 (스프레드시트 형태 - 시작일 추가됨)
   unsubTTask = onSnapshot(query(collection(db, "rooms", code, "tasks"), orderBy("createdAt", "asc")), s => {
     const tbody = document.getElementById('team-task-list'); 
     if(!tbody) return;
@@ -261,11 +328,10 @@ function showTeamRoom(code) {
       if(data.status === '진행중') progress++;
       else if(data.status === '완료') done++;
       else if(data.status === '지연') delayed++;
-      else delayed++; // 대기는 지연/대기에 포함시킴
+      else delayed++; 
 
       const tr = document.createElement('tr');
       
-      // 상태 드롭다운
       const tdStatus = document.createElement('td');
       const select = document.createElement('select');
       select.className = `status-select ${data.status || '대기'}`;
@@ -277,30 +343,23 @@ function showTeamRoom(code) {
       select.onchange = (e) => updateDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id), { status: e.target.value });
       tdStatus.appendChild(select);
 
-      // 작업명
       const tdName = document.createElement('td');
       tdName.textContent = data.text;
       if(data.status === '완료') { tdName.style.textDecoration = 'line-through'; tdName.style.color = '#64748b'; }
 
-      // 💡 마감일 -> 기간 (시작일 ~ 마감일)
       const tdDate = document.createElement('td');
       const startStr = data.startDate || '?';
       const dueStr = data.dueDate || '?';
       
-      if (startStr === '?' && dueStr === '?') {
-        tdDate.textContent = '-';
-      } else {
-        tdDate.textContent = `${startStr} ~ ${dueStr}`;
-      }
+      if (startStr === '?' && dueStr === '?') { tdDate.textContent = '-'; } 
+      else { tdDate.textContent = `${startStr} ~ ${dueStr}`; }
 
       if (data.dueDate && data.status !== '완료') {
           const today = new Date().toISOString().split('T')[0];
-          // 마감일이 지났으면 글씨를 붉게 표시
           if (data.dueDate < today) { tdDate.style.color = '#ef4444'; tdDate.style.fontWeight = 'bold'; } 
           else if (data.dueDate === today) { tdDate.style.color = '#f97316'; tdDate.style.fontWeight = 'bold'; } 
       }
 
-      // 문서 링크
       const tdLink = document.createElement('td');
       if(data.link) {
         const a = document.createElement('a');
@@ -309,7 +368,6 @@ function showTeamRoom(code) {
         tdLink.appendChild(a);
       } else { tdLink.textContent = '-'; }
 
-      // 삭제 버튼
       const tdAction = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.className = 'btn-delete'; delBtn.textContent = '삭제';
@@ -320,7 +378,6 @@ function showTeamRoom(code) {
       tbody.appendChild(tr);
     });
 
-    // 상단 통계 수치 실시간 업데이트
     if(document.getElementById('ms-total')) {
       document.getElementById('ms-total').textContent = total;
       document.getElementById('ms-progress').textContent = progress;
@@ -331,7 +388,6 @@ function showTeamRoom(code) {
     }
   });
   
-  // 💡 새 작업 등록 로직 (시작일 추가)
   const btnAddTask = document.getElementById('btn-add-team-task');
   if(btnAddTask) {
     btnAddTask.onclick = () => {
@@ -351,12 +407,11 @@ function showTeamRoom(code) {
         }); 
         textInp.value = ''; 
         if(startDateInp) startDateInp.value = ''; 
-        dateInp.value = ''; 
-        linkInp.value = '';
+        dateInp.value = ''; linkInp.value = '';
       }
     };
   }
-} 
+}
 
 function renderZonesAndStatus() {
   const canvasArea = document.getElementById('canvas-area');
