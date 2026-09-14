@@ -4,12 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow Dashboard</title>
-  <!-- 💡 브라우저 캐시 강제 무효화 마법 (?v=2) -->
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
 
-  <!-- 로그인 화면 -->
   <div id="login-screen">
     <h1>FocusFlow™</h1>
     <p>보안이 적용된 프라이빗 생산성 워크스페이스입니다.</p>
@@ -17,7 +15,6 @@
     <button class="btn-google" id="btn-login">Google 계정으로 로그인</button>
   </div>
 
-  <!-- 메인 대시보드 (💡 로그인을 해야만 이 안쪽이 전부 보입니다) -->
   <div id="main-dashboard" style="display: none;">
     <header class="header-banner">
       <div class="user-profile">
@@ -48,15 +45,23 @@
         <div class="calendar-container"><iframe id="my-dynamic-calendar" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe></div>
       </section>
 
+      <!-- 💡 Step 3: 오늘 할 일 및 뽀모도로 타이머 반영 -->
       <section class="card">
-        <h2 class="card-title">✅ 오늘 할 일 & 메모</h2>
-        <div class="input-group"><input type="text" id="personal-task-input" placeholder="새 할 일 추가"/><button class="btn-action" id="btn-add-personal-task">추가</button></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 class="card-title">✅ 오늘 할 일 & 메모</h2>
+          <div id="pomodoro-display" style="display:none; font-family:monospace; font-size:12px; font-weight:bold; color:#0f1115; background:#4ade80; padding:4px 10px; border-radius:6px; animation: popUp 0.3s ease;">25:00</div>
+        </div>
+        <div class="input-group">
+          <input type="text" id="personal-task-input" placeholder="새 할 일 추가" style="flex: 2;"/>
+          <input type="time" id="personal-task-time" title="마감 시간(선택)" style="flex: 1;"/>
+          <button class="btn-action" id="btn-add-personal-task">추가</button>
+        </div>
         <ul class="list" id="personal-task-list"></ul>
         <textarea id="personal-memo-input" placeholder="간단한 메모장입니다." style="margin-top: 5px;"></textarea>
       </section>
     </div>
 
-    <!-- 목표 삭제 관리 모달 -->
+    <!-- 목표 모달 -->
     <div class="modal-overlay" id="goal-modal">
       <div class="modal-content">
         <button class="btn-close-modal" id="btn-close-modal">&times;</button>
@@ -65,7 +70,7 @@
       </div>
     </div>
     
-    <!-- 구역 커스텀 편집 모달 -->
+    <!-- 구역 모달 -->
     <div class="modal-overlay" id="zone-modal">
       <div class="modal-content">
         <button class="btn-close-modal" id="btn-close-zone-modal">&times;</button>
@@ -105,13 +110,10 @@
         </div>
       </div>
       
-      <!-- 상태 버튼 영역 -->
       <div class="status-controls" id="dynamic-status-controls"></div>
-      <!-- 픽셀 캔버스 -->
       <div class="pixel-canvas theme-blueprint" id="canvas-area"></div>
 
       <div class="grid-layout" style="grid-template-columns: 1fr; gap: 20px;">
-        <!-- 다중 메모보드 -->
         <section class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <h2 class="card-title">📢 팀 공용 메모보드</h2>
@@ -124,7 +126,6 @@
           <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 공유됩니다."></textarea>
         </section>
         
-        <!-- 🚀 마일스톤 대시보드 -->
         <section class="card">
           <h2 class="card-title">🚀 마일스톤 트래커</h2>
           <div class="milestone-summary">
@@ -143,15 +144,7 @@
           </div>
           <div class="milestone-table-container">
             <table class="milestone-table">
-              <thead>
-                <tr>
-                  <th width="12%">상태</th>
-                  <th width="28%">작업명</th>
-                  <th width="30%">기간 (시작일 ~ 마감일)</th>
-                  <th width="15%">문서</th>
-                  <th width="15%">관리</th>
-                </tr>
-              </thead>
+              <thead><tr><th width="12%">상태</th><th width="28%">작업명</th><th width="30%">기간 (시작일 ~ 마감일)</th><th width="15%">문서</th><th width="15%">관리</th></tr></thead>
               <tbody id="team-task-list"></tbody>
             </table>
           </div>
@@ -159,7 +152,7 @@
       </div>
     </div>
     
-    <!-- 💡 포스트잇 위젯 (로그인해야만 보이도록 이 안으로 들어왔습니다!) -->
+    <!-- 💡 포스트잇 위젯 -->
     <button id="btn-toggle-postit" class="fab-btn">📝 포스트잇</button>
     <div id="postit-widget" class="postit-container" style="display: none;">
       <div class="postit-header" id="postit-header">
@@ -171,7 +164,6 @@
 
   </div> <!-- /main-dashboard 끝 -->
 
-  <!-- 💡 브라우저 캐시 강제 무효화 마법 (?v=2) -->
-  <script type="module" src="app.js?v=2"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
