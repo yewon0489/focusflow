@@ -129,3 +129,26 @@ textarea { background: #0f1115; border: 1px solid #2d3748; border-radius: 8px; p
 .postit-header button { background: transparent; border: none; color: #854d0e; font-size: 18px; cursor: pointer; line-height: 1; }
 
 #postit-content { background: #fef08a; border: none; width: 100%; height: 220px; padding: 12px; font-size: 14px; color: #422006; resize: none; outline: none; line-height: 1.5; font-family: "Comic Sans MS", "Chalkboard SE", sans-serif; border-radius: 0 0 8px 8px; }
+
+/* === 🚀 마일스톤 트래커 현황판 스타일 === */
+.milestone-summary { display: flex; gap: 15px; background: #0f1115; padding: 12px 16px; border-radius: 8px; border: 1px solid #2d3748; margin-bottom: 12px; flex-wrap: wrap; justify-content: space-between; }
+.ms-stat { font-size: 12px; color: #94a3b8; display: flex; gap: 8px; align-items: center; }
+.ms-stat span { font-weight: bold; color: #f8fafc; font-size: 15px; }
+
+.milestone-input-group { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.milestone-input-group input { background: #0f1115; border: 1px solid #2d3748; border-radius: 6px; padding: 8px 12px; color: #f8fafc; font-size: 13px; outline: none; }
+.milestone-input-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+.milestone-table-container { max-height: 280px; overflow-y: auto; border: 1px solid #28323e; border-radius: 8px; }
+.milestone-table { width: 100%; border-collapse: collapse; text-align: left; }
+.milestone-table th { background: #1e293b; color: #94a3b8; font-size: 12px; padding: 10px; position: sticky; top: 0; z-index: 10; font-weight: 600; border-bottom: 1px solid #334155; }
+.milestone-table td { padding: 10px; border-bottom: 1px solid #2d3748; font-size: 13px; background: #181d24; vertical-align: middle; }
+
+.status-select { background: #0f1115; border: 1px solid #334155; border-radius: 6px; padding: 4px 6px; font-size: 12px; outline: none; cursor: pointer; font-weight: bold; }
+.status-select.대기 { color: #94a3b8; border-color: #475569; }
+.status-select.진행중 { color: #38bdf8; border-color: #0284c7; }
+.status-select.완료 { color: #4ade80; border-color: #16a34a; }
+.status-select.지연 { color: #ef4444; border-color: #dc2626; }
+
+.ms-link-btn { background: #334155; color: #f8fafc; padding: 4px 8px; border-radius: 6px; text-decoration: none; font-size: 11px; display: inline-block; transition: 0.2s; border: 1px solid #475569; }
+.ms-link-btn:hover { background: #475569; border-color: #94a3b8; }
