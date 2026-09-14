@@ -270,7 +270,8 @@ function renderZonesAndStatus() {
     canvasArea.appendChild(zDiv);
 
     const btn = document.createElement('button'); btn.className = 'btn-status'; btn.dataset.status = z.id; btn.innerHTML = `${z.emoji} ${z.name}`;
-btn.onclick = () => { 
+    btn.onclick = () => { 
+      // 💡 상태 변경 시 커스텀 말풍선 메시지 입력 추가
       const customMsg = prompt(`[${z.name}] 구역으로 이동합니다.\n말풍선에 띄울 상태 메시지를 입력하세요:`, '열일중 🔥');
       if (customMsg !== null) {
         document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); 
@@ -278,6 +279,9 @@ btn.onclick = () => {
         updateMyStatus(z.id, customMsg); 
       }
     };
+    statusContainer.appendChild(btn);
+  });
+}
 
 function updateMyStatus(statusType, msg) {
   setDoc(doc(db, "rooms", activeRoomCode, "users", currentUser.uid), { name: currentUser.displayName, status: statusType, message: msg, updatedAt: Date.now() }, { merge: true });
@@ -314,52 +318,42 @@ function updateAvatar(uid, status, message) {
 
 /* === 💡 구역(Zone) 편집 모달 로직 === */
 let tempZones = [];
-
-document.getElementById('btn-edit-zones').addEventListener('click', () => {
-  // 💡 버그 수정: 모달을 열 때 딱 한 번만 구역 리스트를 가져오도록 수정!
-  tempZones = JSON.parse(JSON.stringify(currentRoomZones)); 
+document.getElementById('btn-edit-zones').addEventListener('click', () => { 
+  tempZones = JSON.parse(JSON.stringify(currentRoomZones));
   document.getElementById('zone-modal').style.display = 'flex'; 
   renderZoneEditList(); 
 });
-
-document.getElementById('btn-close-zone-modal').addEventListener('click', () => { 
-  document.getElementById('zone-modal').style.display = 'none'; 
-});
+document.getElementById('btn-close-zone-modal').addEventListener('click', () => { document.getElementById('zone-modal').style.display = 'none'; });
 
 function renderZoneEditList() {
-  const listDiv = document.getElementById('zone-edit-list'); 
-  listDiv.innerHTML = '';
-  
+  const listDiv = document.getElementById('zone-edit-list'); listDiv.innerHTML = '';
   tempZones.forEach((z, i) => {
     const item = document.createElement('div'); item.className = 'zone-edit-item';
     
-const inputEmoji = document.createElement('input'); 
+    // 💡 Placeholder 추가 완료
+    const inputEmoji = document.createElement('input'); 
     inputEmoji.type = 'text'; inputEmoji.value = z.emoji; inputEmoji.id = `ze-${i}-emoji`; 
     inputEmoji.style.width = '40px'; inputEmoji.style.textAlign = 'center';
-    inputEmoji.placeholder = "이모지"; // 추가된 부분
+    inputEmoji.placeholder = "이모지";
 
     const inputName = document.createElement('input'); 
     inputName.type = 'text'; inputName.value = z.name; inputName.id = `ze-${i}-name`; 
     inputName.style.flex = '1';
-    inputName.placeholder = "구역 이름"; // 추가된 부분
+    inputName.placeholder = "구역 이름";
     
-    const btnDelete = document.createElement('button'); 
-    btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
+    const btnDelete = document.createElement('button'); btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
     btnDelete.addEventListener('click', () => {
       if(tempZones.length <= 1) { alert("최소 1개의 구역은 남겨두어야 합니다."); return; }
-      tempZones.splice(i, 1); 
-      renderZoneEditList(); // 💡 이제 삭제해도 원상복구되지 않습니다.
+      tempZones.splice(i, 1); renderZoneEditList();
     });
 
-    item.appendChild(inputEmoji); item.appendChild(inputName); item.appendChild(btnDelete); 
-    listDiv.appendChild(item);
+    item.appendChild(inputEmoji); item.appendChild(inputName); item.appendChild(btnDelete); listDiv.appendChild(item);
   });
 }
 
 document.getElementById('btn-add-new-zone').addEventListener('click', () => {
   if(tempZones.length >= 5) { alert("구역은 최대 5개까지만 추가할 수 있습니다."); return; }
-  tempZones.push({ id: `zone-${Date.now()}`, name: '새로운 구역', emoji: '✨' }); 
-  renderZoneEditList(); // 💡 이제 추가하면 정상적으로 하나 더 생깁니다.
+  tempZones.push({ id: `zone-${Date.now()}`, name: '', emoji: '✨' }); renderZoneEditList();
 });
 
 document.getElementById('btn-save-zones').addEventListener('click', async () => {
@@ -370,7 +364,6 @@ document.getElementById('btn-save-zones').addEventListener('click', async () => 
   await updateDoc(doc(db, "rooms", activeRoomCode), { zones: tempZones });
   document.getElementById('zone-modal').style.display = 'none';
 });
-
 
 /* === 📢 팀 다중 메모보드 로직 === */
 function renderMemoBoardSelector() {
