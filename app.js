@@ -132,13 +132,16 @@ function loadPersonalData() {
     });
     if (currentModalType) renderModalTable(currentModalType);
   });
-// --- 포스트잇 데이터 실시간 저장/불러오기 ---
+
+  // 💡 포스트잇 데이터 실시간 저장/불러오기
   const postitContent = document.getElementById('postit-content');
-  onSnapshot(doc(userRef, "data", "postit"), s => { 
-    if (s.exists() && document.activeElement !== postitContent) postitContent.value = s.data().text || ''; 
-  });
-  postitContent.oninput = () => { setTimeout(() => setDoc(doc(userRef, "data", "postit"), { text: postitContent.value }, { merge: true }), 800); };
-}
+  if (postitContent) {
+    onSnapshot(doc(userRef, "data", "postit"), s => { 
+      if (s.exists() && document.activeElement !== postitContent) postitContent.value = s.data().text || ''; 
+    });
+    postitContent.oninput = () => { setTimeout(() => setDoc(doc(userRef, "data", "postit"), { text: postitContent.value }, { merge: true }), 800); };
+  }
+} // <--- 여기가 loadPersonalData 함수의 진짜 끝입니다!
 
 ['daily', 'weekly', 'monthly', 'yearly'].forEach(type => {
   const addGoal = () => { const inp = document.getElementById(`input-${type}`); if(inp.value.trim()) { addDoc(collection(db, "users", currentUser.uid, "goals"), { type: type, text: inp.value.trim(), completed: false, createdAt: Date.now() }); inp.value = ''; } };
@@ -244,9 +247,11 @@ function showTeamRoom(code) {
     });
   });
 
-// 💡 마일스톤 현황판 엔진으로 교체!
+  // 💡 마일스톤 대시보드 로직 (스프레드시트 형태)
   unsubTTask = onSnapshot(query(collection(db, "rooms", code, "tasks"), orderBy("createdAt", "asc")), s => {
-    const tbody = document.getElementById('team-task-list'); tbody.innerHTML = '';
+    const tbody = document.getElementById('team-task-list'); 
+    if(!tbody) return;
+    tbody.innerHTML = '';
     
     let total = 0, progress = 0, done = 0, delayed = 0;
 
@@ -256,11 +261,11 @@ function showTeamRoom(code) {
       if(data.status === '진행중') progress++;
       else if(data.status === '완료') done++;
       else if(data.status === '지연') delayed++;
-      else delayed++; // 대기 상태도 지연/대기에 포함
+      else delayed++; // 대기는 지연/대기에 포함시킴
 
       const tr = document.createElement('tr');
       
-      // 1. 상태 드롭다운
+      // 상태 드롭다운
       const tdStatus = document.createElement('td');
       const select = document.createElement('select');
       select.className = `status-select ${data.status || '대기'}`;
@@ -272,21 +277,21 @@ function showTeamRoom(code) {
       select.onchange = (e) => updateDoc(doc(db, "rooms", activeRoomCode, "tasks", d.id), { status: e.target.value });
       tdStatus.appendChild(select);
 
-      // 2. 작업명
+      // 작업명
       const tdName = document.createElement('td');
       tdName.textContent = data.text;
       if(data.status === '완료') { tdName.style.textDecoration = 'line-through'; tdName.style.color = '#64748b'; }
 
-      // 3. 마감일 (기획 회의 때 나온 날짜 알림 아이디어 적용)
+      // 마감일
       const tdDate = document.createElement('td');
       tdDate.textContent = data.dueDate || '-';
       if (data.dueDate && data.status !== '완료') {
           const today = new Date().toISOString().split('T')[0];
-          if (data.dueDate < today) { tdDate.style.color = '#ef4444'; tdDate.style.fontWeight = 'bold'; } // 마감 지남 (빨간색)
-          else if (data.dueDate === today) { tdDate.style.color = '#f97316'; tdDate.style.fontWeight = 'bold'; } // 오늘 마감 (주황색)
+          if (data.dueDate < today) { tdDate.style.color = '#ef4444'; tdDate.style.fontWeight = 'bold'; } 
+          else if (data.dueDate === today) { tdDate.style.color = '#f97316'; tdDate.style.fontWeight = 'bold'; } 
       }
 
-      // 4. 참조 링크 (기획안, 외부 파일 허브 역할)
+      // 문서 링크
       const tdLink = document.createElement('td');
       if(data.link) {
         const a = document.createElement('a');
@@ -295,7 +300,7 @@ function showTeamRoom(code) {
         tdLink.appendChild(a);
       } else { tdLink.textContent = '-'; }
 
-      // 5. 관리(삭제)
+      // 삭제 버튼
       const tdAction = document.createElement('td');
       const delBtn = document.createElement('button');
       delBtn.className = 'btn-delete'; delBtn.textContent = '삭제';
@@ -307,31 +312,37 @@ function showTeamRoom(code) {
     });
 
     // 상단 통계 수치 실시간 업데이트
-    document.getElementById('ms-total').textContent = total;
-    document.getElementById('ms-progress').textContent = progress;
-    document.getElementById('ms-done').textContent = done;
-    document.getElementById('ms-delayed').textContent = delayed;
-    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-    document.getElementById('ms-percent').textContent = `${pct}%`;
+    if(document.getElementById('ms-total')) {
+      document.getElementById('ms-total').textContent = total;
+      document.getElementById('ms-progress').textContent = progress;
+      document.getElementById('ms-done').textContent = done;
+      document.getElementById('ms-delayed').textContent = delayed;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      document.getElementById('ms-percent').textContent = `${pct}%`;
+    }
   });
   
-  // 새 작업 등록 로직 연결
-  document.getElementById('btn-add-team-task').onclick = () => {
-    const textInp = document.getElementById('ms-input-text');
-    const dateInp = document.getElementById('ms-input-date');
-    const linkInp = document.getElementById('ms-input-link');
-    
-    if(textInp.value.trim()) { 
-      addDoc(collection(db, "rooms", code, "tasks"), { 
-        text: textInp.value.trim(), 
-        status: '대기',
-        dueDate: dateInp.value || '',
-        link: linkInp.value.trim() || '',
-        createdAt: Date.now() 
-      }); 
-      textInp.value = ''; dateInp.value = ''; linkInp.value = '';
-    }
-  };
+  // 새 작업 등록 로직
+  const btnAddTask = document.getElementById('btn-add-team-task');
+  if(btnAddTask) {
+    btnAddTask.onclick = () => {
+      const textInp = document.getElementById('ms-input-text');
+      const dateInp = document.getElementById('ms-input-date');
+      const linkInp = document.getElementById('ms-input-link');
+      
+      if(textInp.value.trim()) { 
+        addDoc(collection(db, "rooms", code, "tasks"), { 
+          text: textInp.value.trim(), 
+          status: '대기',
+          dueDate: dateInp.value || '',
+          link: linkInp.value.trim() || '',
+          createdAt: Date.now() 
+        }); 
+        textInp.value = ''; dateInp.value = ''; linkInp.value = '';
+      }
+    };
+  }
+} // <--- 여기가 showTeamRoom 함수의 끝 괄호입니다.
 
 function renderZonesAndStatus() {
   const canvasArea = document.getElementById('canvas-area');
@@ -348,7 +359,6 @@ function renderZonesAndStatus() {
     else { zDiv.style.border = '2px dashed #475569'; zDiv.style.color = '#64748b'; zDiv.style.background = 'rgba(30, 41, 59, 0.4)'; }
     canvasArea.appendChild(zDiv);
 
-    // 💡 팝업창 없이 클릭 즉시 해당 구역으로 이동 (메시지는 유지)
     const btn = document.createElement('button'); btn.className = 'btn-status'; btn.dataset.status = z.id; btn.innerHTML = `${z.name}`;
     btn.onclick = () => { 
       document.querySelectorAll('.btn-status').forEach(b => b.classList.remove('active')); 
@@ -375,16 +385,12 @@ function getAvatarCoordinates(statusId, uid) {
 
 function createAvatar(uid, name, status, message) {
   const coord = getAvatarCoordinates(status, uid);
-  const avatarDiv = document.createElement('div'); 
-  avatarDiv.id = `avatar-${uid}`; 
-  avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
-  avatarDiv.style.top = coord.top; 
-  avatarDiv.style.left = coord.left;
-  avatarDiv.dataset.status = status; // 💡 해결: 아바타 자체에 현재 구역을 저장해 둠
+  const avatarDiv = document.createElement('div'); avatarDiv.id = `avatar-${uid}`; avatarDiv.className = `avatar ${uid === currentUser.uid ? 'active-user' : ''}`;
+  avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
+  avatarDiv.dataset.status = status;
   
   const isMe = (uid === currentUser.uid);
-  const bubble = document.createElement('div'); 
-  bubble.className = 'avatar-bubble'; 
+  const bubble = document.createElement('div'); bubble.className = 'avatar-bubble'; 
   
   if (isMe) {
     bubble.innerHTML = `<input type="text" class="status-input-inline" value="${message || '열일중 🔥'}" placeholder="상태 메시지 입력" />`;
@@ -393,7 +399,7 @@ function createAvatar(uid, name, status, message) {
     inputEl.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         const newMsg = inputEl.value.trim() || '열일중 🔥';
-        const currentZoneId = avatarDiv.dataset.status; // 💡 해결: 옛날 기억 대신 방금 갱신된 현재 구역을 읽어옴!
+        const currentZoneId = avatarDiv.dataset.status;
         updateMyStatus(currentZoneId, newMsg);
         inputEl.blur();
       }
@@ -413,29 +419,23 @@ function createAvatar(uid, name, status, message) {
 }
 
 function updateAvatar(uid, status, message) {
-  const avatarDiv = document.getElementById(`avatar-${uid}`); 
-  if(!avatarDiv) return;
+  const avatarDiv = document.getElementById(`avatar-${uid}`); if(!avatarDiv) return;
   
-  avatarDiv.dataset.status = status; // 💡 해결: 구역을 이동할 때마다 현재 구역 정보 갱신
+  avatarDiv.dataset.status = status;
   const coord = getAvatarCoordinates(status, uid);
-  avatarDiv.style.top = coord.top; 
-  avatarDiv.style.left = coord.left;
+  avatarDiv.style.top = coord.top; avatarDiv.style.left = coord.left;
   
   const isMe = (uid === currentUser.uid);
   if (isMe) {
     const inputEl = avatarDiv.querySelector('.status-input-inline');
-    // 💡 해결: 내가 직접 타이핑 중일 때는 텍스트가 덮어써져서 날아가지 않도록 보호
-    if (inputEl && document.activeElement !== inputEl) {
-      inputEl.value = message || '열일중 🔥';
-    }
+    if (inputEl && document.activeElement !== inputEl) { inputEl.value = message || '열일중 🔥'; }
   } else {
     avatarDiv.querySelector('.avatar-bubble').textContent = message || '열일중 🔥';
   }
-  
   avatarDiv.querySelector('.avatar-body').innerHTML = getRobotSVG(status, uid);
 }
 
-/* === 💡 구역(Zone) 편집 모달 로직 (1개 입력칸으로 통일) === */
+/* === 💡 구역(Zone) 편집 모달 로직 === */
 let tempZones = [];
 document.getElementById('btn-edit-zones').addEventListener('click', () => { 
   tempZones = JSON.parse(JSON.stringify(currentRoomZones));
@@ -448,18 +448,15 @@ function renderZoneEditList() {
   const listDiv = document.getElementById('zone-edit-list'); listDiv.innerHTML = '';
   tempZones.forEach((z, i) => {
     const item = document.createElement('div'); item.className = 'zone-edit-item';
-    
     const inputName = document.createElement('input'); 
     inputName.type = 'text'; inputName.value = z.name; inputName.id = `ze-${i}-name`; 
-    inputName.style.flex = '1';
-    inputName.placeholder = "구역 이름을 입력하세요";
+    inputName.style.flex = '1'; inputName.placeholder = "구역 이름을 입력하세요";
     
     const btnDelete = document.createElement('button'); btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
     btnDelete.addEventListener('click', () => {
       if(tempZones.length <= 1) { alert("최소 1개의 구역은 남겨두어야 합니다."); return; }
       tempZones.splice(i, 1); renderZoneEditList();
     });
-
     item.appendChild(inputName); item.appendChild(btnDelete); listDiv.appendChild(item);
   });
 }
@@ -470,9 +467,7 @@ document.getElementById('btn-add-new-zone').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-zones').addEventListener('click', async () => {
-  tempZones.forEach((z, i) => { 
-    z.name = document.getElementById(`ze-${i}-name`).value.trim() || '이름 없음'; 
-  });
+  tempZones.forEach((z, i) => { z.name = document.getElementById(`ze-${i}-name`).value.trim() || '이름 없음'; });
   await updateDoc(doc(db, "rooms", activeRoomCode), { zones: tempZones });
   document.getElementById('zone-modal').style.display = 'none';
 });
@@ -523,38 +518,36 @@ function connectMemoBoardListener() {
   tMemo.oninput = () => { setTimeout(() => setDoc(doc(db, "rooms", activeRoomCode, "memos", currentMemoBoardId), { content: tMemo.value }, { merge: true }), 800); };
 }
 
-/* === 📝 포스트잇 드래그 및 토글 로직 === */
+/* === 📝 포스트잇 위젯 드래그 및 토글 로직 === */
 const postitWidget = document.getElementById('postit-widget');
 const postitHeader = document.getElementById('postit-header');
+const btnTogglePostit = document.getElementById('btn-toggle-postit');
 
-document.getElementById('btn-toggle-postit').addEventListener('click', () => {
-  postitWidget.style.display = postitWidget.style.display === 'none' ? 'flex' : 'none';
-  if (postitWidget.style.display === 'flex') {
-    // 열 때 위치 초기화 (우측 하단)
-    postitWidget.style.top = 'auto'; postitWidget.style.left = 'auto';
-    postitWidget.style.bottom = '70px'; postitWidget.style.right = '20px';
-  }
-});
-document.getElementById('btn-close-postit').addEventListener('click', () => { postitWidget.style.display = 'none'; });
+if(btnTogglePostit && postitWidget && postitHeader) {
+  btnTogglePostit.addEventListener('click', () => {
+    postitWidget.style.display = postitWidget.style.display === 'none' ? 'flex' : 'none';
+    if (postitWidget.style.display === 'flex') {
+      postitWidget.style.top = 'auto'; postitWidget.style.left = 'auto';
+      postitWidget.style.bottom = '70px'; postitWidget.style.right = '20px';
+    }
+  });
+  document.getElementById('btn-close-postit').addEventListener('click', () => { postitWidget.style.display = 'none'; });
 
-// 드래그 앤 드롭 구현
-let isDragging = false, postitStartX, postitStartY;
-postitHeader.addEventListener('mousedown', (e) => {
-  isDragging = true;
-  // fixed, bottom, right 속성을 top, left 기반으로 강제 변환하여 드래그 오류 방지
-  const rect = postitWidget.getBoundingClientRect();
-  postitWidget.style.bottom = 'auto'; postitWidget.style.right = 'auto';
-  postitWidget.style.left = rect.left + 'px'; postitWidget.style.top = rect.top + 'px';
-  
-  postitStartX = e.clientX - rect.left;
-  postitStartY = e.clientY - rect.top;
-});
+  let isDragging = false, postitStartX, postitStartY;
+  postitHeader.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    const rect = postitWidget.getBoundingClientRect();
+    postitWidget.style.bottom = 'auto'; postitWidget.style.right = 'auto';
+    postitWidget.style.left = rect.left + 'px'; postitWidget.style.top = rect.top + 'px';
+    postitStartX = e.clientX - rect.left; postitStartY = e.clientY - rect.top;
+  });
 
-document.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
-  e.preventDefault();
-  postitWidget.style.left = `${e.clientX - postitStartX}px`;
-  postitWidget.style.top = `${e.clientY - postitStartY}px`;
-});
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    postitWidget.style.left = `${e.clientX - postitStartX}px`;
+    postitWidget.style.top = `${e.clientY - postitStartY}px`;
+  });
 
-document.addEventListener('mouseup', () => { isDragging = false; });
+  document.addEventListener('mouseup', () => { isDragging = false; });
+}
