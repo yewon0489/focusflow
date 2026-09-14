@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusFlow Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <!-- 💡 브라우저 캐시 강제 무효화 마법 (?v=2) -->
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
 
@@ -16,7 +17,7 @@
     <button class="btn-google" id="btn-login">Google 계정으로 로그인</button>
   </div>
 
-  <!-- 메인 대시보드 -->
+  <!-- 메인 대시보드 (💡 로그인을 해야만 이 안쪽이 전부 보입니다) -->
   <div id="main-dashboard" style="display: none;">
     <header class="header-banner">
       <div class="user-profile">
@@ -104,27 +105,11 @@
         </div>
       </div>
       
-      <!-- 상태 버튼 영역 (JS에서 자동 렌더링) -->
+      <!-- 상태 버튼 영역 -->
       <div class="status-controls" id="dynamic-status-controls"></div>
-
-      <!-- 픽셀 캔버스 (JS에서 구역 자동 렌더링) -->
+      <!-- 픽셀 캔버스 -->
       <div class="pixel-canvas theme-blueprint" id="canvas-area"></div>
 
-      <div class="grid-layout" style="grid-template-columns: 1fr 1fr;">
-        <!-- 다중 메모보드 -->
-        <section class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-            <h2 class="card-title">📢 팀 공용 메모보드</h2>
-            <div style="display:flex; gap:6px;">
-              <select id="memo-board-selector" style="background:#0f1115; border:1px solid #2d3748; color:#38bdf8; border-radius:4px; padding:4px; font-size:12px; font-weight:bold; outline:none;"></select>
-              <button id="btn-add-memo-board" style="background:transparent; border:1px solid #4ade80; color:#4ade80; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer;">+ 채널</button>
-              <button id="btn-delete-memo-board" style="background:transparent; border:1px solid #ef4444; color:#ef4444; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; display:none;">삭제</button>
-            </div>
-          </div>
-          <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 공유됩니다."></textarea>
-        </section>
-        
-<!-- 💡 팀 메모보드와 마일스톤을 넓게 쓰기 위해 grid 속성 변경 -->
       <div class="grid-layout" style="grid-template-columns: 1fr; gap: 20px;">
         <!-- 다중 메모보드 -->
         <section class="card">
@@ -139,11 +124,9 @@
           <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 공유됩니다."></textarea>
         </section>
         
-        <!-- 🚀 마일스톤 대시보드 (스프레드시트형) -->
+        <!-- 🚀 마일스톤 대시보드 -->
         <section class="card">
           <h2 class="card-title">🚀 마일스톤 트래커</h2>
-          
-          <!-- 요약 대시보드 -->
           <div class="milestone-summary">
             <div class="ms-stat">전체 <span id="ms-total">0</span></div>
             <div class="ms-stat">진행 중 <span id="ms-progress" style="color:#38bdf8;">0</span></div>
@@ -151,8 +134,6 @@
             <div class="ms-stat">지연/대기 <span id="ms-delayed" style="color:#ef4444;">0</span></div>
             <div class="ms-stat">평균 진행률 <span id="ms-percent" style="font-family:monospace; color:#fde047;">0%</span></div>
           </div>
-          
-<!-- 입력 폼 -->
           <div class="milestone-input-group">
             <input type="text" id="ms-input-text" placeholder="작업명" style="flex: 2;"/>
             <input type="date" id="ms-input-start-date" title="시작일 지정" style="flex: 1;"/>
@@ -160,8 +141,6 @@
             <input type="text" id="ms-input-link" placeholder="링크 (선택)" style="flex: 1;"/>
             <button class="btn-action" id="btn-add-team-task">등록</button>
           </div>
-          
-          <!-- 트래커 테이블 -->
           <div class="milestone-table-container">
             <table class="milestone-table">
               <thead>
@@ -178,14 +157,9 @@
           </div>
         </section>
       </div>
-      </div>
     </div>
-  </div>
-
-<!-- ... (위쪽 마일스톤 등 다른 코드들) ... -->
-    </div> <!-- team-room-view 끝나는 곳 -->
     
-    <!-- 💡 포스트잇 위젯 -->
+    <!-- 💡 포스트잇 위젯 (로그인해야만 보이도록 이 안으로 들어왔습니다!) -->
     <button id="btn-toggle-postit" class="fab-btn">📝 포스트잇</button>
     <div id="postit-widget" class="postit-container" style="display: none;">
       <div class="postit-header" id="postit-header">
@@ -195,8 +169,9 @@
       <textarea id="postit-content" placeholder="잠깐 기억할 내용을 적고 지우세요..."></textarea>
     </div>
 
-  </div> <!-- main-dashboard (메인 대시보드) 끝나는 곳 닫는 괄호 -->
+  </div> <!-- /main-dashboard 끝 -->
 
-  <script type="module" src="app.js"></script>
+  <!-- 💡 브라우저 캐시 강제 무효화 마법 (?v=2) -->
+  <script type="module" src="app.js?v=2"></script>
 </body>
 </html>
