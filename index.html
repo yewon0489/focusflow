@@ -152,11 +152,12 @@
             <div class="ms-stat">평균 진행률 <span id="ms-percent" style="font-family:monospace; color:#fde047;">0%</span></div>
           </div>
           
-          <!-- 입력 폼 -->
+<!-- 입력 폼 -->
           <div class="milestone-input-group">
-            <input type="text" id="ms-input-text" placeholder="어떤 작업을 해야 하나요?" style="flex: 2;"/>
+            <input type="text" id="ms-input-text" placeholder="작업명" style="flex: 2;"/>
+            <input type="date" id="ms-input-start-date" title="시작일 지정" style="flex: 1;"/>
             <input type="date" id="ms-input-date" title="마감일 지정" style="flex: 1;"/>
-            <input type="text" id="ms-input-link" placeholder="문서 링크 (선택)" style="flex: 1;"/>
+            <input type="text" id="ms-input-link" placeholder="링크 (선택)" style="flex: 1;"/>
             <button class="btn-action" id="btn-add-team-task">등록</button>
           </div>
           
@@ -165,9 +166,9 @@
             <table class="milestone-table">
               <thead>
                 <tr>
-                  <th width="15%">상태</th>
-                  <th width="35%">작업명</th>
-                  <th width="20%">마감일</th>
+                  <th width="12%">상태</th>
+                  <th width="28%">작업명</th>
+                  <th width="30%">기간 (시작일 ~ 마감일)</th>
                   <th width="15%">문서</th>
                   <th width="15%">관리</th>
                 </tr>
