@@ -309,38 +309,62 @@ function updateAvatar(uid, status, message) {
 }
 
 /* === 💡 구역(Zone) 편집 모달 로직 === */
-document.getElementById('btn-edit-zones').addEventListener('click', () => { document.getElementById('zone-modal').style.display = 'flex'; renderZoneEditList(); });
-document.getElementById('btn-close-zone-modal').addEventListener('click', () => { document.getElementById('zone-modal').style.display = 'none'; });
-
 let tempZones = [];
+
+document.getElementById('btn-edit-zones').addEventListener('click', () => {
+  // 💡 버그 수정: 모달을 열 때 딱 한 번만 구역 리스트를 가져오도록 수정!
+  tempZones = JSON.parse(JSON.stringify(currentRoomZones)); 
+  document.getElementById('zone-modal').style.display = 'flex'; 
+  renderZoneEditList(); 
+});
+
+document.getElementById('btn-close-zone-modal').addEventListener('click', () => { 
+  document.getElementById('zone-modal').style.display = 'none'; 
+});
+
 function renderZoneEditList() {
-  tempZones = JSON.parse(JSON.stringify(currentRoomZones));
-  const listDiv = document.getElementById('zone-edit-list'); listDiv.innerHTML = '';
+  const listDiv = document.getElementById('zone-edit-list'); 
+  listDiv.innerHTML = '';
+  
   tempZones.forEach((z, i) => {
     const item = document.createElement('div'); item.className = 'zone-edit-item';
-    const inputEmoji = document.createElement('input'); inputEmoji.type = 'text'; inputEmoji.value = z.emoji; inputEmoji.id = `ze-${i}-emoji`; inputEmoji.style.width = '40px'; inputEmoji.style.textAlign = 'center';
-    const inputName = document.createElement('input'); inputName.type = 'text'; inputName.value = z.name; inputName.id = `ze-${i}-name`; inputName.style.flex = '1';
     
-    const btnDelete = document.createElement('button'); btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
+    const inputEmoji = document.createElement('input'); 
+    inputEmoji.type = 'text'; inputEmoji.value = z.emoji; inputEmoji.id = `ze-${i}-emoji`; 
+    inputEmoji.style.width = '40px'; inputEmoji.style.textAlign = 'center';
+    
+    const inputName = document.createElement('input'); 
+    inputName.type = 'text'; inputName.value = z.name; inputName.id = `ze-${i}-name`; 
+    inputName.style.flex = '1';
+    
+    const btnDelete = document.createElement('button'); 
+    btnDelete.className = 'btn-delete'; btnDelete.textContent = '삭제';
     btnDelete.addEventListener('click', () => {
       if(tempZones.length <= 1) { alert("최소 1개의 구역은 남겨두어야 합니다."); return; }
-      tempZones.splice(i, 1); renderZoneEditList();
+      tempZones.splice(i, 1); 
+      renderZoneEditList(); // 💡 이제 삭제해도 원상복구되지 않습니다.
     });
 
-    item.appendChild(inputEmoji); item.appendChild(inputName); item.appendChild(btnDelete); listDiv.appendChild(item);
+    item.appendChild(inputEmoji); item.appendChild(inputName); item.appendChild(btnDelete); 
+    listDiv.appendChild(item);
   });
 }
 
 document.getElementById('btn-add-new-zone').addEventListener('click', () => {
   if(tempZones.length >= 5) { alert("구역은 최대 5개까지만 추가할 수 있습니다."); return; }
-  tempZones.push({ id: `zone-${Date.now()}`, name: '새로운 구역', emoji: '✨' }); renderZoneEditList();
+  tempZones.push({ id: `zone-${Date.now()}`, name: '새로운 구역', emoji: '✨' }); 
+  renderZoneEditList(); // 💡 이제 추가하면 정상적으로 하나 더 생깁니다.
 });
 
 document.getElementById('btn-save-zones').addEventListener('click', async () => {
-  tempZones.forEach((z, i) => { z.emoji = document.getElementById(`ze-${i}-emoji`).value || '✨'; z.name = document.getElementById(`ze-${i}-name`).value || '이름 없음'; });
+  tempZones.forEach((z, i) => { 
+    z.emoji = document.getElementById(`ze-${i}-emoji`).value || '✨'; 
+    z.name = document.getElementById(`ze-${i}-name`).value || '이름 없음'; 
+  });
   await updateDoc(doc(db, "rooms", activeRoomCode), { zones: tempZones });
   document.getElementById('zone-modal').style.display = 'none';
 });
+
 
 /* === 📢 팀 다중 메모보드 로직 === */
 function renderMemoBoardSelector() {
