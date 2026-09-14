@@ -124,11 +124,59 @@
           <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 공유됩니다."></textarea>
         </section>
         
+<!-- 💡 팀 메모보드와 마일스톤을 넓게 쓰기 위해 grid 속성 변경 -->
+      <div class="grid-layout" style="grid-template-columns: 1fr; gap: 20px;">
+        <!-- 다중 메모보드 -->
         <section class="card">
-          <h2 class="card-title">🚀 마일스톤</h2>
-          <div class="input-group"><input type="text" id="team-task-input" placeholder="할 일 추가"/><button class="btn-action" id="btn-add-team-task">추가</button></div>
-          <ul class="list" id="team-task-list"></ul>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <h2 class="card-title">📢 팀 공용 메모보드</h2>
+            <div style="display:flex; gap:6px;">
+              <select id="memo-board-selector" style="background:#0f1115; border:1px solid #2d3748; color:#38bdf8; border-radius:4px; padding:4px; font-size:12px; font-weight:bold; outline:none;"></select>
+              <button id="btn-add-memo-board" style="background:transparent; border:1px solid #4ade80; color:#4ade80; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer;">+ 채널</button>
+              <button id="btn-delete-memo-board" style="background:transparent; border:1px solid #ef4444; color:#ef4444; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; display:none;">삭제</button>
+            </div>
+          </div>
+          <textarea id="team-memo-input" placeholder="채널을 선택하고 텍스트를 입력하세요. 이 방의 멤버들에게만 공유됩니다."></textarea>
         </section>
+        
+        <!-- 🚀 마일스톤 대시보드 (스프레드시트형) -->
+        <section class="card">
+          <h2 class="card-title">🚀 마일스톤 트래커</h2>
+          
+          <!-- 요약 대시보드 -->
+          <div class="milestone-summary">
+            <div class="ms-stat">전체 <span id="ms-total">0</span></div>
+            <div class="ms-stat">진행 중 <span id="ms-progress" style="color:#38bdf8;">0</span></div>
+            <div class="ms-stat">완료 <span id="ms-done" style="color:#4ade80;">0</span></div>
+            <div class="ms-stat">지연/대기 <span id="ms-delayed" style="color:#ef4444;">0</span></div>
+            <div class="ms-stat">평균 진행률 <span id="ms-percent" style="font-family:monospace; color:#fde047;">0%</span></div>
+          </div>
+          
+          <!-- 입력 폼 -->
+          <div class="milestone-input-group">
+            <input type="text" id="ms-input-text" placeholder="어떤 작업을 해야 하나요?" style="flex: 2;"/>
+            <input type="date" id="ms-input-date" title="마감일 지정" style="flex: 1;"/>
+            <input type="text" id="ms-input-link" placeholder="문서 링크 (선택)" style="flex: 1;"/>
+            <button class="btn-action" id="btn-add-team-task">등록</button>
+          </div>
+          
+          <!-- 트래커 테이블 -->
+          <div class="milestone-table-container">
+            <table class="milestone-table">
+              <thead>
+                <tr>
+                  <th width="15%">상태</th>
+                  <th width="35%">작업명</th>
+                  <th width="20%">마감일</th>
+                  <th width="15%">문서</th>
+                  <th width="15%">관리</th>
+                </tr>
+              </thead>
+              <tbody id="team-task-list"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
       </div>
     </div>
   </div>
