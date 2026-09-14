@@ -133,6 +133,16 @@
     </div>
   </div>
 
+<!-- 💡 플로팅 포스트잇 위젯 -->
+  <button id="btn-toggle-postit" class="fab-btn">📝 포스트잇</button>
+  <div id="postit-widget" class="postit-container" style="display: none;">
+    <div class="postit-header" id="postit-header">
+      <span>📌 Quick Note</span>
+      <button id="btn-close-postit">&times;</button>
+    </div>
+    <textarea id="postit-content" placeholder="잠깐 기억할 내용을 적고 지우세요..."></textarea>
+  </div>
+  
   <script type="module" src="app.js"></script>
 </body>
 </html>
